@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medicatie App</title>
+  <meta name="theme-color" content="#6366f1">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    /* ... (zelfde CSS als eerder, voeg evt. styles toe voor foto's en dagschema) ... */
+    .foto-box {max-width:120px; max-height:120px;}
+    .moment-card {background:#fff; margin:.75em 0; padding:.75em; border-radius:8px;}
+  </style>
+</head>
+<body>
+  <header>💊 Medicatie App</header>
+  <nav>
+    <button id="nav-medicatie" class="active">Medicatie</button>
+    <button id="nav-voorraad">Voorraad</button>
+    <button id="nav-instellingen">Instellingen</button>
+    <button id="nav-dagschema">Dagschema</button>
+    <button id="nav-bestellen">Bestellen</button>
+  </nav>
+  <!-- Medicatie Overzicht -->
+  <section id="s-medicatie" class="active">
+    <button class="plus-btn" title="Toevoegen" onclick="toonMedicijnForm()">
+      +
+    </button>
+    <h2>Medicatie overzicht</h2>
+    <div id="medicaties-lijst"></div>
+    <div id="medicijn-form-div" style="display:none"></div>
+  </section>
+  <!-- Voorraad Overzicht -->
+  <section id="s-voorraad">
+    <h2>Voorraad</h2>
+    <div id="voorraad-lijst"></div>
+  </section>
+  <!-- Instellingen -->
+  <section id="s-instellingen">
+    <h2>Instellingen</h2>
+    <label>Gewicht patiënt (kg)</label>
+    <input id="inp-gewicht" type="number" min="1" step="0.01">
+    <label>Voorrraad voor hoeveel dagen?</label>
+    <input id="inp-dagen" type="number" min="1" step="1">
+    <button class="btn" onclick="slaInstellingenOp()">Opslaan</button>
+  </section>
+  <!-- Dagschema (toedientijden) -->
+  <section id="s-dagschema">
+    <button class="plus-btn" title="Toevoegen" onclick="toonMomentForm()">
+      +
+    </button>
+    <h2>Dagschema (toedientijden)</h2>
+    <div id="momenten-lijst"></div>
+    <div id="moment-form-div" style="display:none"></div>
+  </section>
+  <!-- Besteloverzicht -->
+  <section id="s-bestellen">
+    <h2>Besteloverzicht</h2>
+    <div id="bestel-overzicht"></div>
+    <button class="btn" onclick="mailBestellijst()">Mail naar apotheek</button>
+  </section>
+  <script>
+    // --- STATE (uit localStorage) ---
+    function loadState() {
+      return {
+        medicaties: JSON.parse(localStorage.getItem("medicaties")||"[]"),
+        voorraad: JSON.parse(localStorage.getItem("voorraad")||"{}"),
+        gewicht: parseFloat(localStorage.getItem("gewicht")||""),
+        dagen: parseInt(localStorage.getItem("dagen")||"1"),
+        momenten: JSON.parse(localStorage.getItem("momenten")||"[]"),
+      }
+    }
+    function saveState(state) {
+      localStorage.setItem("medicaties", JSON.stringify(state.medicaties));
+      localStorage.setItem("voorraad", JSON.stringify(state.voorraad));
+      localStorage.setItem("gewicht", state.gewicht||"");
+      localStorage.setItem("dagen", state.dagen||"1");
+      localStorage.setItem("momenten", JSON.stringify(state.momenten));
+    }
+    let appState = loadState();
+
+    // --- Navigatie ---
+    document.querySelectorAll("nav button").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        document.querySelectorAll("section").forEach(sec=>sec.classList.remove("active"));
+        const s = btn.id.replace("nav-","s-");
+        document.getElementById(s).classList.add("active");
+        if(s==="s-medicatie") renderMedicatie();
+        if(s==="s-voorraad") renderVoorraad();
+        if(s==="s-instellingen") renderInstellingen();
+        if(s==="s-bestellen") renderBestellen();
+        if(s==="s-dagschema") renderMomenten();
+      }
+    });
+
+    // --- Medicatie Overzicht met foto ---
+    function renderMedicatie() {
+      const lijst = document.getElementById("medicaties-lijst");
+      lijst.innerHTML = "";
+      if(appState.medicaties.length === 0) {
+        lijst.innerHTML = `<div class="info">Nog geen medicatie toegevoegd.</div>`;
+      }
+      appState.medicaties.forEach((m, i) => {
+        lijst.innerHTML += `
+          <div class="med-card">
+            <span class="naam">${m.naam}</span>
+            <span class="delete" onclick="verwijderMedicijn(${i})" title="Verwijder">&#128465;</span>
+            <span class="delete" onclick="toonMedicijnForm(${i})" title="Bewerk">&#9998;</span>
+            ${m.foto ? `<br><img class="foto-box" src="${m.foto}">` : ""}
+            <br>
+            <small>
+              ${m.vorm==="Vloeistof" ? `
+                Dosering: ${m.dosering_per_kg} ${m.eenheid}/kg/dag<br>
+                Conc.: ${m.concentratie_hoeveelheid} ${m.concentratie_eenheid} per ${m.concentratie_per_ml} ml
+              ` : m.vorm==="Pil" ? `
+                Dosering: ${m.dosering_per_kg} mg/kg/dag<br>
+                mg per pil: ${m.mg_per_pil}, pillen/verpakking: ${m.pillen_per_verpakking}
+              ` : `
+                ${m.ampullen_per_dag} ampullen/sachets per dag, ${m.ampullen_per_verpakking} per verpakking
+              `}
+            </small>
+          </div>`;
+      });
+      document.getElementById("medicijn-form-div").style.display="none";
+    }
+    renderMedicatie();
+
+    window.toonMedicijnForm = function(idx) {
+      const m = idx!=null ? appState.medicaties[idx] : {};
+      const formdiv = document.getElementById("medicijn-form-div");
+      let vorm = m.vorm||"Vloeistof";
+      let html = `<form id="medform">
+        <label>Naam</label>
+        <input name="naam" required value="${m.naam||""}">
+        <label>Vorm</label>
+        <select name="vorm" onchange="window.switchVorm(this.value)">
+          <option${vorm==="Vloeistof"?" selected":""}>Vloeistof</option>
+          <option${vorm==="Pil"?" selected":""}>Pil</option>
+          <option${vorm==="Ampul of Sachet"?" selected":""}>Ampul of Sachet</option>
+        </select>
+        <div id="vorm-fields"></div>
+        <label>Foto van medicijn (optioneel)</label>
+        <input type="file" accept="image/*" capture="environment" name="foto" id="foto-input" onchange="window.readFoto(event)">
+        ${m.foto ? `<img id="foto-preview" class="foto-box" src="${m.foto}"><br>` : `<img id="foto-preview" class="foto-box" style="display:none"><br>` }
+        <div style="margin-top:.5em">
+          <button class="btn" type="submit">${idx!=null?"Opslaan":"Toevoegen"}</button>
+          <button type="button" class="btn" style="background:#aaa" onclick="document.getElementById('medicijn-form-div').style.display='none'">Annuleren</button>
+        </div>
+        </form>`;
+      formdiv.innerHTML = html;
+      formdiv.style.display="";
+      let fotoData = m.foto||"";
+      window.switchVorm = function(v) {
+        m.vorm = v;
+        renderVormFields(v, m);
+      }
+      renderVormFields(vorm, m);
+      window.readFoto = function(ev) {
+        const file = ev.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          fotoData = e.target.result;
+          document.getElementById("foto-preview").style.display="";
+          document.getElementById("foto-preview").src = fotoData;
+        };
+        reader.readAsDataURL(file);
+      }
+      document.getElementById("medform").onsubmit = function(e) {
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target).entries());
+        let medicijn = {naam:f.naam, vorm:f.vorm};
+        if(f.vorm==="Vloeistof") {
+          medicijn.eenheid = f.eenheid;
+          medicijn.dosering_per_kg = +f.dosering_per_kg;
+          medicijn.concentratie_hoeveelheid = +f.concentratie_hoeveelheid;
+          medicijn.concentratie_eenheid = f.concentratie_eenheid;
+          medicijn.concentratie_per_ml = +f.concentratie_per_ml;
+          medicijn.ml_per_verpakking = +f.ml_per_verpakking;
+        } else if(f.vorm==="Pil") {
+          medicijn.dosering_per_kg = +f.dosering_per_kg;
+          medicijn.mg_per_pil = +f.mg_per_pil;
+          medicijn.pillen_per_verpakking = +f.pillen_per_verpakking;
+        } else {
+          medicijn.ampullen_per_dag = +f.ampullen_per_dag;
+          medicijn.ampullen_per_verpakking = +f.ampullen_per_verpakking;
+        }
+        if(fotoData) medicijn.foto = fotoData;
+        if(idx!=null) appState.medicaties[idx]=medicijn;
+        else appState.medicaties.push(medicijn);
+        saveState(appState);
+        renderMedicatie();
+      };
+    }
+    function renderVormFields(v, m) {
+      let html = "";
+      if(v==="Vloeistof") {
+        html = `
+          <label>Eenheid dosering</label>
+          <select name="eenheid">
+            <option${m.eenheid==="mg"?" selected":""}>mg</option>
+            <option${m.eenheid==="ml"?" selected":""}>ml</option>
+            <option${m.eenheid==="µg"?" selected":""}>µg</option>
+          </select>
+          <label>Dosering per kg per dag</label>
+          <input name="dosering_per_kg" type="number" min="0" step="0.01" required value="${m.dosering_per_kg||""}">
+          <label>Concentratie hoeveelheid</label>
+          <input name="concentratie_hoeveelheid" type="number" min="0" step="0.01" required value="${m.concentratie_hoeveelheid||""}">
+          <label>Concentratie eenheid</label>
+          <select name="concentratie_eenheid">
+            <option${m.concentratie_eenheid==="mg"?" selected":""}>mg</option>
+            <option${m.concentratie_eenheid==="ml"?" selected":""}>ml</option>
+            <option${m.concentratie_eenheid==="µg"?" selected":""}>µg</option>
+          </select>
+          <label>Per hoeveel ml?</label>
+          <input name="concentratie_per_ml" type="number" min="0" step="0.01" required value="${m.concentratie_per_ml||""}">
+          <label>Aantal ml per verpakking</label>
+          <input name="ml_per_verpakking" type="number" min="1" step="0.01" required value="${m.ml_per_verpakking||""}">
+        `;
+      } else if(v==="Pil") {
+        html = `
+          <label>Dosering per kg per dag</label>
+          <input name="dosering_per_kg" type="number" min="0" step="0.01" required value="${m.dosering_per_kg||""}">
+          <label>mg per pil</label>
+          <input name="mg_per_pil" type="number" min="0" step="0.01" required value="${m.mg_per_pil||""}">
+          <label>Aantal pillen per verpakking</label>
+          <input name="pillen_per_verpakking" type="number" min="1" step="1" required value="${m.pillen_per_verpakking||""}">
+        `;
+      } else {
+        html = `
+          <label>Ampullen/sachets per dag</label>
+          <input name="ampullen_per_dag" type="number" min="0" step="0.01" required value="${m.ampullen_per_dag||""}">
+          <label>Ampullen/sachets per verpakking</label>
+          <input name="ampullen_per_verpakking" type="number" min="1" step="1" required value="${m.ampullen_per_verpakking||""}">
+        `;
+      }
+      document.getElementById("vorm-fields").innerHTML = html;
+    }
+    window.verwijderMedicijn = function(idx) {
+      if(confirm("Verwijder dit medicijn?")) {
+        appState.medicaties.splice(idx,1);
+        saveState(appState);
+        renderMedicatie();
+      }
+    }
+
+    // --- Voorraad ---
+    function renderVoorraad() {
+      let html = "";
+      appState.medicaties.forEach((m,i) => {
+        let v = appState.voorraad[m.naam] || 0;
+        html += `
+          <div class="med-card flex">
+            <span style="flex:2">${m.naam}</span>
+            <input style="width:6em" type="number" min="0" step="1" value="${v}" onchange="window.updateVoorraad('${m.naam}', this.value)">
+            <span>verpakkingen</span>
+          </div>`;
+      });
+      if(appState.medicaties.length===0) html = `<div class="info">Nog geen medicatie toegevoegd.</div>`;
+      document.getElementById("voorraad-lijst").innerHTML = html;
+    }
+    window.updateVoorraad = function(naam, val) {
+      appState.voorraad[naam] = parseInt(val)||0;
+      saveState(appState);
+    }
+
+    // --- Instellingen ---
+    function renderInstellingen() {
+      document.getElementById("inp-gewicht").value = appState.gewicht||"";
+      document.getElementById("inp-dagen").value = appState.dagen||"1";
+    }
+    window.slaInstellingenOp = function() {
+      appState.gewicht = parseFloat(document.getElementById("inp-gewicht").value)||"";
+      appState.dagen = parseInt(document.getElementById("inp-dagen").value)||1;
+      saveState(appState);
+      alert("Instellingen opgeslagen!");
+    }
+
+    // --- Toedientijden/dagschema ---
+    function renderMomenten() {
+      const lijst = document.getElementById("momenten-lijst");
+      lijst.innerHTML = "";
+      if(appState.momenten.length === 0) {
+        lijst.innerHTML = `<div class="info">Nog geen toedientijden toegevoegd.</div>`;
+      }
+      appState.momenten
+        .sort((a,b)=>a.tijd.localeCompare(b.tijd))
+        .forEach((m, i) => {
+        lijst.innerHTML += `
+          <div class="moment-card">
+            <b>${m.tijd}</b> - ${m.medicijn} ${m.hoeveelheid?`(${m.hoeveelheid})`:""}
+            <span class="delete" onclick="verwijderMoment(${i})" title="Verwijder">&#128465;</span>
+          </div>`;
+      });
+      document.getElementById("moment-form-div").style.display="none";
+    }
+    window.toonMomentForm = function(idx) {
+      const m = idx!=null ? appState.momenten[idx] : {};
+      const formdiv = document.getElementById("moment-form-div");
+      let html = `<form id="momentform">
+        <label>Tijdstip</label>
+        <input name="tijd" type="time" required value="${m.tijd||""}">
+        <label>Medicijn</label>
+        <select name="medicijn" required>
+          <option value="" disabled${!m.medicijn?" selected":""}>Kies een medicijn</option>
+          ${appState.medicaties.map(x=>`<option${m.medicijn===x.naam?" selected":""}>${x.naam}</option>`).join("")}
+        </select>
+        <label>Hoeveelheid (optioneel)</label>
+        <input name="hoeveelheid" value="${m.hoeveelheid||""}">
+        <div style="margin-top:.5em">
+          <button class="btn" type="submit">${idx!=null?"Opslaan":"Toevoegen"}</button>
+          <button type="button" class="btn" style="background:#aaa" onclick="document.getElementById('moment-form-div').style.display='none'">Annuleren</button>
+        </div>
+        </form>`;
+      formdiv.innerHTML = html;
+      formdiv.style.display="";
+      document.getElementById("momentform").onsubmit = function(e) {
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target).entries());
+        let moment = {tijd:f.tijd, medicijn:f.medicijn, hoeveelheid:f.hoeveelheid};
+        if(idx!=null) appState.momenten[idx]=moment;
+        else appState.momenten.push(moment);
+        saveState(appState);
+        renderMomenten();
+      };
+    }
+    window.verwijderMoment = function(idx) {
+      if(confirm("Moment verwijderen?")) {
+        appState.momenten.splice(idx,1);
+        saveState(appState);
+        renderMomenten();
+      }
+    }
+
+    // --- Besteloverzicht blijft gelijk als eerder (zie vorige code) ---
+    function renderBestellen() {
+      let gewicht = appState.gewicht, dagen = appState.dagen;
+      if(!gewicht||!dagen) {
+        document.getElementById("bestel-overzicht").innerHTML = `<div class="info">Vul eerst gewicht en dagen in onder Instellingen.</div>`;
+        return;
+      }
+      let html = "";
+      let bestelregels = [];
+      appState.medicaties.forEach(m=>{
+        let voorraad = appState.voorraad[m.naam]||0;
+        if(m.vorm==="Vloeistof") {
+          let dosering = m.dosering_per_kg * gewicht * dagen;
+          let mlnodig = (dosering) / (m.concentratie_hoeveelheid / m.concentratie_per_ml);
+          let mlvoorraad = voorraad * m.ml_per_verpakking;
+          let bestel_ml = Math.max(0, mlnodig-mlvoorraad);
+          let verpakkingen = bestel_ml>0 ? Math.ceil(bestel_ml/m.ml_per_verpakking) : 0;
+          html += `<div class="med-card">
+            <b>${m.naam}</b><br>
+            Benodigd: ${mlnodig.toFixed(1)} ml<br>
+            Huidige voorraad: ${mlvoorraad.toFixed(1)} ml (${voorraad} verpakkingen)<br>
+            Te bestellen: <b>${verpakkingen}</b> verpakking(en)
+          </div>`;
+          if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
+        } else if(m.vorm==="Pil") {
+          let dosering = m.dosering_per_kg * gewicht * dagen;
+          let pillen_nodig = dosering / m.mg_per_pil;
+          let voorraad_pillen = voorraad * m.pillen_per_verpakking;
+          let te_bestellen = Math.max(0, pillen_nodig-voorraad_pillen);
+          let verpakkingen = te_bestellen>0 ? Math.ceil(te_bestellen/m.pillen_per_verpakking) : 0;
+          html += `<div class="med-card">
+            <b>${m.naam}</b><br>
+            Benodigd: ${pillen_nodig.toFixed(1)} pillen<br>
+            Huidige voorraad: ${voorraad_pillen} pillen (${voorraad} verpakkingen)<br>
+            Te bestellen: <b>${verpakkingen}</b> verpakking(en)
+          </div>`;
+          if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
+        } else {
+          let ampullen_nodig = m.ampullen_per_dag * dagen;
+          let voorraad_ampullen = voorraad * m.ampullen_per_verpakking;
+          let te_bestellen = Math.max(0, ampullen_nodig-voorraad_ampullen);
+          let verpakkingen = te_bestellen>0 ? Math.ceil(te_bestellen/m.ampullen_per_verpakking) : 0;
+          html += `<div class="med-card">
+            <b>${m.naam}</b><br>
+            Benodigd: ${ampullen_nodig.toFixed(1)} ampullen/sachets<br>
+            Huidige voorraad: ${voorraad_ampullen} ampullen/sachets (${voorraad} verpakkingen)<br>
+            Te bestellen: <b>${verpakkingen}</b> verpakking(en)
+          </div>`;
+          if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
+        }
+      });
+      if(bestelregels.length>0) {
+        html += `<div class="bestellijst"><b>Bestellijst:</b><br>${bestelregels.join("<br>")}</div>`;
+      } else {
+        html += `<div class="info">Je hebt voldoende voorraad van alle medicijnen.</div>`;
+      }
+      document.getElementById("bestel-overzicht").innerHTML = html;
+    }
+    window.mailBestellijst = function() {
+      let el = document.querySelector("#bestel-overzicht .bestellijst");
+      let body = el ? el.innerText.replace(/<br>/g,"%0A") : "Geen te bestellen medicatie.";
+      window.location = "mailto:?subject=Medicijnbestelling&body="+encodeURIComponent(body);
+    }
+  </script>
+</body>
+</html>
