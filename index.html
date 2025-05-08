@@ -10,9 +10,38 @@
     body { font-family: system-ui, sans-serif; background: #f3f4f6; margin: 0; }
     header { background: linear-gradient(90deg, #e0e7ff 60%, #f3f4f6 100%); color: #222;
       font-weight: bold; font-size: 1.2em; padding: 1em; border-left: 6px solid #6366f1; }
-    nav { display: flex; justify-content: space-around; background: #e0e7ff; border-bottom: 2px solid #6366f1; }
-    nav button { flex: 1; padding: 1em; background: none; border: none; font-size: 1em; cursor: pointer; font-weight: bold; }
-    nav button.active { color: #fff; background: #6366f1; border-radius: 0 0 1em 1em; }
+    nav {
+      display: flex;
+      overflow-x: auto;
+      background: #e0e7ff;
+      border-bottom: 2px solid #6366f1;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+    nav button {
+      flex: 0 0 auto;
+      padding: 0.7em 1em;
+      background: none;
+      border: none;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 0;
+      min-width: 90px;
+    }
+    nav button.active {
+      color: #fff;
+      background: #6366f1;
+      border-radius: 0 0 1em 1em;
+    }
+    @media (max-width: 600px) {
+      nav button {
+        font-size: 0.98em;
+        padding: 0.7em 0.5em;
+        min-width: 85px;
+      }
+    }
     section { display: none; padding: 1em; }
     section.active { display: block; }
     .med-card { background: #fff; margin: .75em 0; padding: .75em; border-radius: 8px; box-shadow: 0 2px 8px #6366f122; }
