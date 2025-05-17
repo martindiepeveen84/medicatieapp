@@ -6,7 +6,14 @@
   <title>Medicatie App</title>
   <meta name="theme-color" content="#6366f1">
   <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <style>
+    html, body {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
     body { font-family: system-ui, sans-serif; background: #f3f4f6; margin: 0; }
     header { background: linear-gradient(90deg, #e0e7ff 60%, #f3f4f6 100%); color: #222;
       font-weight: bold; font-size: 1.2em; padding: 1em; border-left: 6px solid #6366f1; }
@@ -25,9 +32,10 @@
       border-bottom: 2px solid #6366f1;
       padding: 0.5em;
       position: absolute;
-      top: 60px; /* Zorg dat het direct onder de header staat */
+      top: 60px;
       width: 100%;
       left: 0;
+      z-index: 1000;
     }
     #mobile-menu.hidden {
       display: none;
@@ -50,10 +58,10 @@
     }
     @media (min-width: 600px) {
       #menu-toggle {
-        display: none; /* Verberg de toggle knop op bredere schermen */
+        display: none;
       }
       #mobile-menu {
-        display: flex; /* Toon het menu standaard */
+        display: flex;
         position: static;
         flex-direction: row;
       }
@@ -68,11 +76,11 @@
     <button id="menu-toggle" aria-label="Menu openen">&#9776;</button>
   </header>
   <nav id="mobile-menu" class="hidden">
-    <button id="nav-medicatie" class="active">Medicatie</button>
-    <button id="nav-voorraad">Voorraad</button>
-    <button id="nav-instellingen">Instellingen</button>
-    <button id="nav-dagschema">Dagschema</button>
-    <button id="nav-bestellen">Bestellen</button>
+    <button id="nav-medicatie" class="active" tabindex="0">Medicatie</button>
+    <button id="nav-voorraad" tabindex="0">Voorraad</button>
+    <button id="nav-instellingen" tabindex="0">Instellingen</button>
+    <button id="nav-dagschema" tabindex="0">Dagschema</button>
+    <button id="nav-bestellen" tabindex="0">Bestellen</button>
   </nav>
   <!-- Medicatie Overzicht -->
   <section id="s-medicatie" class="active">
@@ -109,13 +117,30 @@
     <button class="btn" onclick="mailBestellijst()">Mail naar apotheek</button>
   </section>
   <script>
-    // Zorg dat het menu toggle werkt op mobiel
-    const menuToggle = document.getElementById("menu-toggle");
-    const mobileMenu = document.getElementById("mobile-menu");
+    document.addEventListener("DOMContentLoaded", function() {
+      // Zorg dat het menu toggle werkt op mobiel
+      const menuToggle = document.getElementById("menu-toggle");
+      const mobileMenu = document.getElementById("mobile-menu");
+      menuToggle.addEventListener("click", () => {
+        mobileMenu.classList.toggle("hidden");
+      });
 
-    menuToggle.addEventListener("click", () => {
-      mobileMenu.classList.toggle("hidden");
+      // Extra touchend voor iOS/Safari
+      const navButtons = document.querySelectorAll('#mobile-menu button');
+      navButtons.forEach(btn => {
+        btn.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          btn.click();
+        }, { passive: false });
+      });
     });
+
+    // Optioneel: voeg hier je service worker registratie toe voor offline ondersteuning:
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js');
+      });
+    }
   </script>
 </body>
 </html>
