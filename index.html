@@ -6,42 +6,83 @@
   <title>Medicatie App</title>
   <meta name="theme-color" content="#6366f1">
   <link rel="manifest" href="manifest.json">
+    <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icon-192.png">
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png"> 
   <style>
-    body { font-family: system-ui, sans-serif; background: #f3f4f6; margin: 0; }
+    body { font-family: system-ui, sans-serif; background: #f3f4f6; margin: 0;}
     header { background: linear-gradient(90deg, #e0e7ff 60%, #f3f4f6 100%); color: #222;
-      font-weight: bold; font-size: 1.2em; padding: 1em; border-left: 6px solid #6366f1; }
-    nav {
-      display: flex;
-      overflow-x: auto;
-      background: #e0e7ff;
-      border-bottom: 2px solid #6366f1;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
+      font-weight: bold; font-size: 1.2em; padding: 1em 1em 1em 3em; border-left: 6px solid #6366f1; position: relative;}
+
+    /* Hamburger icon */
+    .hamburger {
+      position: absolute;
+      left: 0.75em; top: 1em; width: 2em; height: 2em; background: none; border: none;
+      z-index: 50; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center;
     }
-    nav::-webkit-scrollbar { display: none; }
-    nav button {
-      flex: 0 0 auto;
-      padding: 0.7em 1em;
-      background: none;
-      border: none;
-      font-size: 1em;
-      cursor: pointer;
-      font-weight: bold;
-      border-radius: 0;
-      min-width: 90px;
+    .hamburger span {
+      width: 1.6em; height: 0.25em; background: #6366f1; margin: 0.18em 0; border-radius: 2px; display: block; transition: all 0.3s;
     }
-    nav button.active {
-      color: #fff;
-      background: #6366f1;
-      border-radius: 0 0 1em 1em;
+    /* Hamburger animatie als open */
+    .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(7px,7px);}
+    .hamburger.open span:nth-child(2) { opacity: 0;}
+    .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(7px,-7px);}
+
+    /* Side menu (drawer) */
+    .side-menu {
+      position: fixed; top: 0; left: 0; height: 100vh; width: 220px;
+      background: #e0e7ff; box-shadow: 2px 0 16px #2221; z-index: 100;
+      transform: translateX(-100%); transition: transform 0.25s;
+      display: flex; flex-direction: column; padding-top: 4em;
     }
-    @media (max-width: 600px) {
+    .side-menu.open { transform: translateX(0);}
+    .side-menu button {
+      background: none; border: none; font-size: 1.08em; font-weight: bold; color: #222;
+      padding: 1.1em 1.2em; text-align: left; width: 100%; cursor: pointer;
+      border-bottom: 1px solid #c7d2fe;
+      outline: none; transition: background 0.15s;
+    }
+    .side-menu button.active, .side-menu button:active {
+      background: #6366f1; color: #fff; border-radius: 0 1.2em 1.2em 0;
+    }
+
+    /* Overlay when open */
+    .menu-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(60,60,80,0.18);
+      z-index: 90;
+    }
+    .menu-overlay.open { display: block;}
+
+    /* Hide old nav bar for mobile, show only for wide screens */
+    nav { display: none;}
+    @media (min-width: 700px) {
+      .hamburger { display: none;}
+      .side-menu { display: none;}
+      nav { display: flex; overflow-x: auto; background: #e0e7ff; border-bottom: 2px solid #6366f1; -webkit-overflow-scrolling: touch; scrollbar-width: none;}
+      nav::-webkit-scrollbar { display: none; }
       nav button {
-        font-size: 0.98em;
-        padding: 0.7em 0.5em;
-        min-width: 85px;
+        flex: 0 0 auto;
+        padding: 0.7em 1em;
+        background: none;
+        border: none;
+        font-size: 1em;
+        cursor: pointer;
+        font-weight: bold;
+        border-radius: 0;
+        min-width: 90px;
+      }
+      nav button.active {
+        color: #fff;
+        background: #6366f1;
+        border-radius: 0 0 1em 1em;
       }
     }
+
     section { display: none; padding: 1em; }
     section.active { display: block; }
     .med-card { background: #fff; margin: .75em 0; padding: .75em; border-radius: 8px; box-shadow: 0 2px 8px #6366f122; }
@@ -60,7 +101,13 @@
   </style>
 </head>
 <body>
-  <header>💊 Medicatie App</header>
+  <header>
+    <button class="hamburger" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    💊 Medicatie App
+  </header>
+  <div class="menu-overlay" id="menu-overlay"></div>
   <nav id="main-nav">
     <button data-section="medicatie" class="active">Medicatie</button>
     <button data-section="voorraad">Voorraad</button>
@@ -68,6 +115,15 @@
     <button data-section="dagschema">Dagschema</button>
     <button data-section="bestellen">Bestellen</button>
   </nav>
+  <!-- Hamburger/side menu -->
+  <aside class="side-menu" id="side-menu" aria-label="Hoofdmenu">
+    <button data-section="medicatie" class="active">Medicatie</button>
+    <button data-section="voorraad">Voorraad</button>
+    <button data-section="instellingen">Instellingen</button>
+    <button data-section="dagschema">Dagschema</button>
+    <button data-section="bestellen">Bestellen</button>
+  </aside>
+
   <!-- Medicatie Overzicht -->
   <section id="s-medicatie" class="active">
     <button id="add-medicijn-btn" class="plus-btn" title="Toevoegen">+</button>
@@ -124,16 +180,60 @@
 
     // ---- EVENT HANDLERS ----
     document.addEventListener('DOMContentLoaded', function() {
-      // Navigatie
-      const sections = ["medicatie", "voorraad", "instellingen", "dagschema", "bestellen"];
+      // Hamburger menu
+      const hamburger = document.getElementById('hamburger-btn');
+      const sideMenu = document.getElementById('side-menu');
+      const overlay = document.getElementById('menu-overlay');
+      function closeMenu() {
+        hamburger.classList.remove('open');
+        sideMenu.classList.remove('open');
+        overlay.classList.remove('open');
+        hamburger.setAttribute('aria-expanded','false');
+      }
+      function openMenu() {
+        hamburger.classList.add('open');
+        sideMenu.classList.add('open');
+        overlay.classList.add('open');
+        hamburger.setAttribute('aria-expanded','true');
+      }
+      hamburger.addEventListener('click', function() {
+        if (sideMenu.classList.contains('open')) closeMenu();
+        else openMenu();
+      });
+      overlay.addEventListener('click', closeMenu);
+
+      // Nav & side-menu
+      const menuSections = ["medicatie", "voorraad", "instellingen", "dagschema", "bestellen"];
+      // Nav bar (desktop)
       document.querySelectorAll('#main-nav button').forEach(btn => {
         btn.addEventListener('click', function() {
           document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('active'));
+          document.querySelectorAll('#side-menu button').forEach(b=>b.classList.remove('active'));
           this.classList.add('active');
-          sections.forEach(s=>{
+          document.querySelector(`#side-menu button[data-section="${this.dataset.section}"]`).classList.add('active');
+          menuSections.forEach(s=>{
             document.getElementById('s-'+s).classList.remove('active');
           });
           document.getElementById('s-'+this.dataset.section).classList.add('active');
+          if(this.dataset.section==="medicatie") renderMedicatie();
+          if(this.dataset.section==="voorraad") renderVoorraad();
+          if(this.dataset.section==="instellingen") renderInstellingen();
+          if(this.dataset.section==="bestellen") renderBestellen();
+          if(this.dataset.section==="dagschema") renderMomenten();
+        });
+      });
+      // Side drawer (mobiel)
+      document.querySelectorAll('#side-menu button').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('active'));
+          document.querySelectorAll('#side-menu button').forEach(b=>b.classList.remove('active'));
+          this.classList.add('active');
+          document.querySelector(`#main-nav button[data-section="${this.dataset.section}"]`).classList.add('active');
+          menuSections.forEach(s=>{
+            document.getElementById('s-'+s).classList.remove('active');
+          });
+          document.getElementById('s-'+this.dataset.section).classList.add('active');
+          closeMenu();
           if(this.dataset.section==="medicatie") renderMedicatie();
           if(this.dataset.section==="voorraad") renderVoorraad();
           if(this.dataset.section==="instellingen") renderInstellingen();
