@@ -144,6 +144,12 @@
     <label>Voorrraad voor hoeveel dagen?</label>
     <input id="inp-dagen" type="number" min="1" step="1">
     <button class="btn" id="opslaan-instellingen-btn">Opslaan</button>
+    <hr>
+    <div style="margin-top:1em">
+      <button class="btn" id="exporteer-btn" style="background:#06b6d4">Exporteer alles</button>
+      <input type="file" id="importeer-input" accept=".json" style="display:none">
+      <button class="btn" id="importeer-btn" style="background:#16a34a">Importeer alles</button>
+    </div>
   </section>
   <!-- Dagschema (toedientijden) -->
   <section id="s-dagschema">
@@ -454,6 +460,68 @@
     function renderInstellingen() {
       document.getElementById("inp-gewicht").value = appState.gewicht||"";
       document.getElementById("inp-dagen").value = appState.dagen||"1";
+      // Koppel export/import knoppen (eenmalig)
+      if (!renderInstellingen.bound) {
+        document.getElementById("exporteer-btn").addEventListener("click", function() {
+          const data = {
+            medicaties: appState.medicaties,
+            voorraad: appState.voorraad,
+            gewicht: appState.gewicht,
+            dagen: appState.dagen,
+            momenten: appState.momenten
+          };
+          const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "medicatieapp-export.json";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500);
+        });
+        document.getElementById("importeer-btn").addEventListener("click", function() {
+          document.getElementById("importeer-input").click();
+        });
+        document.getElementById("importeer-input").addEventListener("change", function(ev) {
+          const file = ev.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            try {
+              const data = JSON.parse(e.target.result);
+              if (
+                typeof data === "object" &&
+                Array.isArray(data.medicaties) &&
+                typeof data.voorraad === "object" &&
+                (typeof data.gewicht === "number" || data.gewicht === "") &&
+                typeof data.dagen === "number" &&
+                Array.isArray(data.momenten)
+              ) {
+                if (confirm("Weet je zeker dat je alle gegevens wilt overschrijven met deze import?")) {
+                  appState = {
+                    medicaties: data.medicaties,
+                    voorraad: data.voorraad,
+                    gewicht: data.gewicht,
+                    dagen: data.dagen,
+                    momenten: data.momenten
+                  };
+                  saveState(appState);
+                  alert("Import succesvol! De app wordt herladen.");
+                  location.reload();
+                }
+              } else {
+                alert("Bestand is geen geldige Medicatie App export.");
+              }
+            } catch (err) {
+              alert("Fout bij importeren: " + err.message);
+            }
+          };
+          reader.readAsText(file);
+          // Reset input zodat je opnieuw kunt importeren als nodig
+          ev.target.value = "";
+        });
+        renderInstellingen.bound = true;
+      }
     }
     function slaInstellingenOp() {
       appState.gewicht = parseFloat(document.getElementById("inp-gewicht").value)||"";
