@@ -6,40 +6,19 @@
   <title>Medicatie App</title>
   <meta name="theme-color" content="#6366f1">
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <style>
-    html, body {
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-    }
     body { font-family: system-ui, sans-serif; background: #f3f4f6; margin: 0; }
     header { background: linear-gradient(90deg, #e0e7ff 60%, #f3f4f6 100%); color: #222;
       font-weight: bold; font-size: 1.2em; padding: 1em; border-left: 6px solid #6366f1; }
-    #menu-toggle {
-      background: none;
-      border: none;
-      font-size: 1.5em;
-      cursor: pointer;
-      float: right;
-      margin-right: 0.5em;
-    }
-    #mobile-menu {
+    nav {
       display: flex;
-      flex-direction: column;
+      overflow-x: auto;
       background: #e0e7ff;
       border-bottom: 2px solid #6366f1;
-      padding: 0.5em;
-      position: absolute;
-      top: 60px;
-      width: 100%;
-      left: 0;
-      z-index: 1000;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
-    #mobile-menu.hidden {
-      display: none;
-    }
+    nav::-webkit-scrollbar { display: none; }
     nav button {
       flex: 0 0 auto;
       padding: 0.7em 1em;
@@ -56,35 +35,42 @@
       background: #6366f1;
       border-radius: 0 0 1em 1em;
     }
-    @media (min-width: 600px) {
-      #menu-toggle {
-        display: none;
-      }
-      #mobile-menu {
-        display: flex;
-        position: static;
-        flex-direction: row;
+    @media (max-width: 600px) {
+      nav button {
+        font-size: 0.98em;
+        padding: 0.7em 0.5em;
+        min-width: 85px;
       }
     }
     section { display: none; padding: 1em; }
     section.active { display: block; }
+    .med-card { background: #fff; margin: .75em 0; padding: .75em; border-radius: 8px; box-shadow: 0 2px 8px #6366f122; }
+    .med-card .naam { font-weight: bold; color: #4338ca; }
+    .plus-btn { float: right; background: #6366f1; color: #fff; border: none; border-radius: 50%; width: 2em; height: 2em; font-size: 1.4em; }
+    label { font-weight: 500; margin-top: 1em; color: #374151; display: block; }
+    input, select { font-size:1em; padding:.5em; margin-top:.2em; margin-bottom:.8em; width: 100%; border-radius: 6px; border: 1px solid #c7d2fe; box-sizing: border-box; }
+    .btn { background: #6366f1; color: #fff; border: none; border-radius: 6px; padding: .6em 1.5em; font-weight: bold; font-size: 1em; cursor: pointer; }
+    .btn:active { background: #4338ca; }
+    .delete { float: right; color: #dc2626; margin-left: .5em; font-size:1.1em; cursor: pointer; }
+    .bestellijst { background: #e0e7ff; border-radius: 8px; padding: 1em 1.2em; margin: 1em 0; border-left: 5px solid #6366f1; font-size: 1.1em; }
+    .info { background:#fff8; border-left:4px solid #6366f1; padding:.5em 1em; border-radius:4px; margin:1em 0;}
+    .flex { display: flex; gap: .8em; align-items: center; }
+    .foto-box {max-width:120px; max-height:120px;}
+    .moment-card {background:#fff; margin:.75em 0; padding:.75em; border-radius:8px;}
   </style>
 </head>
 <body>
-  <header>
-    💊 Medicatie App
-    <button id="menu-toggle" aria-label="Menu openen">&#9776;</button>
-  </header>
-  <nav id="mobile-menu" class="hidden">
-    <button id="nav-medicatie" class="active" tabindex="0">Medicatie</button>
-    <button id="nav-voorraad" tabindex="0">Voorraad</button>
-    <button id="nav-instellingen" tabindex="0">Instellingen</button>
-    <button id="nav-dagschema" tabindex="0">Dagschema</button>
-    <button id="nav-bestellen" tabindex="0">Bestellen</button>
+  <header>💊 Medicatie App</header>
+  <nav id="main-nav">
+    <button data-section="medicatie" class="active">Medicatie</button>
+    <button data-section="voorraad">Voorraad</button>
+    <button data-section="instellingen">Instellingen</button>
+    <button data-section="dagschema">Dagschema</button>
+    <button data-section="bestellen">Bestellen</button>
   </nav>
   <!-- Medicatie Overzicht -->
   <section id="s-medicatie" class="active">
-    <button class="plus-btn" title="Toevoegen" onclick="toonMedicijnForm()">+</button>
+    <button id="add-medicijn-btn" class="plus-btn" title="Toevoegen">+</button>
     <h2>Medicatie overzicht</h2>
     <div id="medicaties-lijst"></div>
     <div id="medicijn-form-div" style="display:none"></div>
@@ -99,13 +85,13 @@
     <h2>Instellingen</h2>
     <label>Gewicht patiënt (kg)</label>
     <input id="inp-gewicht" type="number" min="1" step="0.01">
-    <label>Voorraad voor hoeveel dagen?</label>
+    <label>Voorrraad voor hoeveel dagen?</label>
     <input id="inp-dagen" type="number" min="1" step="1">
-    <button class="btn" onclick="slaInstellingenOp()">Opslaan</button>
+    <button class="btn" id="opslaan-instellingen-btn">Opslaan</button>
   </section>
   <!-- Dagschema (toedientijden) -->
   <section id="s-dagschema">
-    <button class="plus-btn" title="Toevoegen" onclick="toonMomentForm()">+</button>
+    <button id="add-moment-btn" class="plus-btn" title="Toevoegen">+</button>
     <h2>Dagschema (toedientijden)</h2>
     <div id="momenten-lijst"></div>
     <div id="moment-form-div" style="display:none"></div>
@@ -114,32 +100,398 @@
   <section id="s-bestellen">
     <h2>Besteloverzicht</h2>
     <div id="bestel-overzicht"></div>
-    <button class="btn" onclick="mailBestellijst()">Mail naar apotheek</button>
+    <button class="btn" id="mail-bestellijst-btn">Mail naar apotheek</button>
   </section>
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      // Zorg dat het menu toggle werkt op mobiel
-      const menuToggle = document.getElementById("menu-toggle");
-      const mobileMenu = document.getElementById("mobile-menu");
-      menuToggle.addEventListener("click", () => {
-        mobileMenu.classList.toggle("hidden");
+    // ---- STATE ----
+    function loadState() {
+      return {
+        medicaties: JSON.parse(localStorage.getItem("medicaties")||"[]"),
+        voorraad: JSON.parse(localStorage.getItem("voorraad")||"{}"),
+        gewicht: parseFloat(localStorage.getItem("gewicht")||""),
+        dagen: parseInt(localStorage.getItem("dagen")||"1"),
+        momenten: JSON.parse(localStorage.getItem("momenten")||"[]"),
+      }
+    }
+    function saveState(state) {
+      localStorage.setItem("medicaties", JSON.stringify(state.medicaties));
+      localStorage.setItem("voorraad", JSON.stringify(state.voorraad));
+      localStorage.setItem("gewicht", state.gewicht||"");
+      localStorage.setItem("dagen", state.dagen||"1");
+      localStorage.setItem("momenten", JSON.stringify(state.momenten));
+    }
+    let appState = loadState();
+
+    // ---- EVENT HANDLERS ----
+    document.addEventListener('DOMContentLoaded', function() {
+      // Navigatie
+      const sections = ["medicatie", "voorraad", "instellingen", "dagschema", "bestellen"];
+      document.querySelectorAll('#main-nav button').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('active'));
+          this.classList.add('active');
+          sections.forEach(s=>{
+            document.getElementById('s-'+s).classList.remove('active');
+          });
+          document.getElementById('s-'+this.dataset.section).classList.add('active');
+          if(this.dataset.section==="medicatie") renderMedicatie();
+          if(this.dataset.section==="voorraad") renderVoorraad();
+          if(this.dataset.section==="instellingen") renderInstellingen();
+          if(this.dataset.section==="bestellen") renderBestellen();
+          if(this.dataset.section==="dagschema") renderMomenten();
+        });
+      });
+      // Medicijn toevoegen
+      document.getElementById('add-medicijn-btn').addEventListener('click', function() {
+        toonMedicijnForm();
+      });
+      // Opslaan instellingen
+      document.getElementById('opslaan-instellingen-btn').addEventListener('click', function() {
+        slaInstellingenOp();
+      });
+      // Moment toevoegen
+      document.getElementById('add-moment-btn').addEventListener('click', function() {
+        toonMomentForm();
+      });
+      // Mail bestel
+      document.getElementById('mail-bestellijst-btn').addEventListener('click', function() {
+        mailBestellijst();
       });
 
-      // Extra touchend voor iOS/Safari
-      const navButtons = document.querySelectorAll('#mobile-menu button');
-      navButtons.forEach(btn => {
-        btn.addEventListener('touchend', function(e) {
-          e.preventDefault();
-          btn.click();
-        }, { passive: false });
-      });
+      // Initial renders
+      renderMedicatie();
     });
 
-    // Optioneel: voeg hier je service worker registratie toe voor offline ondersteuning:
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('service-worker.js');
+    // ---- MEDICATIE ----
+    function renderMedicatie() {
+      const lijst = document.getElementById("medicaties-lijst");
+      lijst.innerHTML = "";
+      if(appState.medicaties.length === 0) {
+        lijst.innerHTML = `<div class="info">Nog geen medicatie toegevoegd.</div>`;
+      }
+      appState.medicaties.forEach((m, i) => {
+        // Card
+        let card = document.createElement('div');
+        card.className = "med-card";
+        card.innerHTML = `
+          <span class="naam">${m.naam}</span>
+          <span class="delete" title="Verwijder">&#128465;</span>
+          <span class="delete" title="Bewerk">&#9998;</span>
+          ${m.foto ? `<br><img class="foto-box" src="${m.foto}">` : ""}
+          <br>
+          <small>
+            ${m.vorm==="Vloeistof" ? `
+              Dosering: ${m.dosering_per_kg} ${m.eenheid}/kg/dag<br>
+              Conc.: ${m.concentratie_hoeveelheid} ${m.concentratie_eenheid} per ${m.concentratie_per_ml} ml
+            ` : m.vorm==="Pil" ? `
+              Dosering: ${m.dosering_per_kg} mg/kg/dag<br>
+              mg per pil: ${m.mg_per_pil}, pillen/verpakking: ${m.pillen_per_verpakking}
+            ` : `
+              ${m.ampullen_per_dag} ampullen/sachets per dag, ${m.ampullen_per_verpakking} per verpakking
+            `}
+          </small>
+        `;
+        // Verwijder
+        card.querySelectorAll('.delete')[0].addEventListener('click', function() {
+          if(confirm("Verwijder dit medicijn?")) {
+            appState.medicaties.splice(i,1);
+            saveState(appState);
+            renderMedicatie();
+          }
+        });
+        // Bewerken
+        card.querySelectorAll('.delete')[1].addEventListener('click', function() {
+          toonMedicijnForm(i);
+        });
+        lijst.appendChild(card);
       });
+      document.getElementById("medicijn-form-div").style.display="none";
+    }
+    function toonMedicijnForm(idx) {
+      const m = idx!=null ? appState.medicaties[idx] : {};
+      const formdiv = document.getElementById("medicijn-form-div");
+      let vorm = m.vorm||"Vloeistof";
+      let html = `<form id="medform">
+        <label>Naam</label>
+        <input name="naam" required value="${m.naam||""}">
+        <label>Vorm</label>
+        <select name="vorm">
+          <option${vorm==="Vloeistof"?" selected":""}>Vloeistof</option>
+          <option${vorm==="Pil"?" selected":""}>Pil</option>
+          <option${vorm==="Ampul of Sachet"?" selected":""}>Ampul of Sachet</option>
+        </select>
+        <div id="vorm-fields"></div>
+        <label>Foto van medicijn (optioneel)</label>
+        <input type="file" accept="image/*" capture="environment" name="foto" id="foto-input">
+        ${m.foto ? `<img id="foto-preview" class="foto-box" src="${m.foto}"><br>` : `<img id="foto-preview" class="foto-box" style="display:none"><br>` }
+        <div style="margin-top:.5em">
+          <button class="btn" type="submit">${idx!=null?"Opslaan":"Toevoegen"}</button>
+          <button type="button" class="btn" style="background:#aaa" id="annuleer-med-btn">Annuleren</button>
+        </div>
+        </form>`;
+      formdiv.innerHTML = html;
+      formdiv.style.display="";
+      let fotoData = m.foto||"";
+      // Vorm wisselen
+      function renderVormFields(v, m) {
+        let html = "";
+        if(v==="Vloeistof") {
+          html = `
+            <label>Eenheid dosering</label>
+            <select name="eenheid">
+              <option${m.eenheid==="mg"?" selected":""}>mg</option>
+              <option${m.eenheid==="ml"?" selected":""}>ml</option>
+              <option${m.eenheid==="µg"?" selected":""}>µg</option>
+            </select>
+            <label>Dosering per kg per dag</label>
+            <input name="dosering_per_kg" type="number" min="0" step="0.01" required value="${m.dosering_per_kg||""}">
+            <label>Concentratie hoeveelheid</label>
+            <input name="concentratie_hoeveelheid" type="number" min="0" step="0.01" required value="${m.concentratie_hoeveelheid||""}">
+            <label>Concentratie eenheid</label>
+            <select name="concentratie_eenheid">
+              <option${m.concentratie_eenheid==="mg"?" selected":""}>mg</option>
+              <option${m.concentratie_eenheid==="ml"?" selected":""}>ml</option>
+              <option${m.concentratie_eenheid==="µg"?" selected":""}>µg</option>
+            </select>
+            <label>Per hoeveel ml?</label>
+            <input name="concentratie_per_ml" type="number" min="0" step="0.01" required value="${m.concentratie_per_ml||""}">
+            <label>Aantal ml per verpakking</label>
+            <input name="ml_per_verpakking" type="number" min="1" step="0.01" required value="${m.ml_per_verpakking||""}">
+          `;
+        } else if(v==="Pil") {
+          html = `
+            <label>Dosering per kg per dag</label>
+            <input name="dosering_per_kg" type="number" min="0" step="0.01" required value="${m.dosering_per_kg||""}">
+            <label>mg per pil</label>
+            <input name="mg_per_pil" type="number" min="0" step="0.01" required value="${m.mg_per_pil||""}">
+            <label>Aantal pillen per verpakking</label>
+            <input name="pillen_per_verpakking" type="number" min="1" step="1" required value="${m.pillen_per_verpakking||""}">
+          `;
+        } else {
+          html = `
+            <label>Ampullen/sachets per dag</label>
+            <input name="ampullen_per_dag" type="number" min="0" step="0.01" required value="${m.ampullen_per_dag||""}">
+            <label>Ampullen/sachets per verpakking</label>
+            <input name="ampullen_per_verpakking" type="number" min="1" step="1" required value="${m.ampullen_per_verpakking||""}">
+          `;
+        }
+        document.getElementById("vorm-fields").innerHTML = html;
+      }
+      renderVormFields(vorm, m);
+      formdiv.querySelector('select[name="vorm"]').addEventListener('change', function() {
+        renderVormFields(this.value, m);
+      });
+      // Foto
+      let fotoInput = formdiv.querySelector('#foto-input');
+      fotoInput.addEventListener('change', function(ev) {
+        const file = ev.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          fotoData = e.target.result;
+          let p = formdiv.querySelector("#foto-preview");
+          p.style.display="";
+          p.src = fotoData;
+        };
+        reader.readAsDataURL(file);
+      });
+      // Annuleren
+      formdiv.querySelector('#annuleer-med-btn').addEventListener('click', function() {
+        formdiv.style.display="none";
+      });
+      // Submit
+      formdiv.querySelector("#medform").onsubmit = function(e) {
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target).entries());
+        let medicijn = {naam:f.naam, vorm:f.vorm};
+        if(f.vorm==="Vloeistof") {
+          medicijn.eenheid = f.eenheid;
+          medicijn.dosering_per_kg = +f.dosering_per_kg;
+          medicijn.concentratie_hoeveelheid = +f.concentratie_hoeveelheid;
+          medicijn.concentratie_eenheid = f.concentratie_eenheid;
+          medicijn.concentratie_per_ml = +f.concentratie_per_ml;
+          medicijn.ml_per_verpakking = +f.ml_per_verpakking;
+        } else if(f.vorm==="Pil") {
+          medicijn.dosering_per_kg = +f.dosering_per_kg;
+          medicijn.mg_per_pil = +f.mg_per_pil;
+          medicijn.pillen_per_verpakking = +f.pillen_per_verpakking;
+        } else {
+          medicijn.ampullen_per_dag = +f.ampullen_per_dag;
+          medicijn.ampullen_per_verpakking = +f.ampullen_per_verpakking;
+        }
+        if(fotoData) medicijn.foto = fotoData;
+        if(idx!=null) appState.medicaties[idx]=medicijn;
+        else appState.medicaties.push(medicijn);
+        saveState(appState);
+        renderMedicatie();
+      };
+    }
+
+    // ---- VOORRAAD ----
+    function renderVoorraad() {
+      let html = "";
+      appState.medicaties.forEach((m,i) => {
+        let v = appState.voorraad[m.naam] || 0;
+        html += `
+          <div class="med-card flex">
+            <span style="flex:2">${m.naam}</span>
+            <input style="width:6em" type="number" min="0" step="1" value="${v}" data-mednaam="${m.naam}">
+            <span>verpakkingen</span>
+          </div>`;
+      });
+      if(appState.medicaties.length===0) html = `<div class="info">Nog geen medicatie toegevoegd.</div>`;
+      document.getElementById("voorraad-lijst").innerHTML = html;
+      // Koppel events
+      document.querySelectorAll('#voorraad-lijst input[type="number"]').forEach(inp => {
+        inp.addEventListener('change', function() {
+          appState.voorraad[this.dataset.mednaam] = parseInt(this.value)||0;
+          saveState(appState);
+        });
+      });
+    }
+
+    // ---- INSTELLINGEN ----
+    function renderInstellingen() {
+      document.getElementById("inp-gewicht").value = appState.gewicht||"";
+      document.getElementById("inp-dagen").value = appState.dagen||"1";
+    }
+    function slaInstellingenOp() {
+      appState.gewicht = parseFloat(document.getElementById("inp-gewicht").value)||"";
+      appState.dagen = parseInt(document.getElementById("inp-dagen").value)||1;
+      saveState(appState);
+      alert("Instellingen opgeslagen!");
+    }
+
+    // ---- DAGSCHEMA ----
+    function renderMomenten() {
+      const lijst = document.getElementById("momenten-lijst");
+      lijst.innerHTML = "";
+      if(appState.momenten.length === 0) {
+        lijst.innerHTML = `<div class="info">Nog geen toedientijden toegevoegd.</div>`;
+      }
+      appState.momenten
+        .sort((a,b)=>a.tijd.localeCompare(b.tijd))
+        .forEach((m, i) => {
+        let card = document.createElement('div');
+        card.className = 'moment-card';
+        card.innerHTML = `
+          <b>${m.tijd}</b> - ${m.medicijn} ${m.hoeveelheid?`(${m.hoeveelheid})`:""}
+          <span class="delete" title="Verwijder">&#128465;</span>
+        `;
+        card.querySelector('.delete').addEventListener('click', function() {
+          if(confirm("Moment verwijderen?")) {
+            appState.momenten.splice(i,1);
+            saveState(appState);
+            renderMomenten();
+          }
+        });
+        lijst.appendChild(card);
+      });
+      document.getElementById("moment-form-div").style.display="none";
+    }
+    function toonMomentForm(idx) {
+      const m = idx!=null ? appState.momenten[idx] : {};
+      const formdiv = document.getElementById("moment-form-div");
+      let html = `<form id="momentform">
+        <label>Tijdstip</label>
+        <input name="tijd" type="time" required value="${m.tijd||""}">
+        <label>Medicijn</label>
+        <select name="medicijn" required>
+          <option value="" disabled${!m.medicijn?" selected":""}>Kies een medicijn</option>
+          ${appState.medicaties.map(x=>`<option${m.medicijn===x.naam?" selected":""}>${x.naam}</option>`).join("")}
+        </select>
+        <label>Hoeveelheid (optioneel)</label>
+        <input name="hoeveelheid" value="${m.hoeveelheid||""}">
+        <div style="margin-top:.5em">
+          <button class="btn" type="submit">${idx!=null?"Opslaan":"Toevoegen"}</button>
+          <button type="button" class="btn" style="background:#aaa" id="annuleer-moment-btn">Annuleren</button>
+        </div>
+        </form>`;
+      formdiv.innerHTML = html;
+      formdiv.style.display="";
+      // Annuleren
+      formdiv.querySelector('#annuleer-moment-btn').addEventListener('click', function() {
+        formdiv.style.display="none";
+      });
+      // Submit
+      formdiv.querySelector("#momentform").onsubmit = function(e) {
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target).entries());
+        let moment = {tijd:f.tijd, medicijn:f.medicijn, hoeveelheid:f.hoeveelheid};
+        if(idx!=null) appState.momenten[idx]=moment;
+        else appState.momenten.push(moment);
+        saveState(appState);
+        renderMomenten();
+      };
+    }
+
+    // ---- BESTELLEN ----
+    function renderBestellen() {
+      let gewicht = appState.gewicht, dagen = appState.dagen;
+      if(!gewicht||!dagen) {
+        document.getElementById("bestel-overzicht").innerHTML = `<div class="info">Vul eerst gewicht en dagen in onder Instellingen.</div>`;
+        return;
+      }
+      let html = "";
+      let bestelregels = [];
+      appState.medicaties.forEach(m=>{
+        let voorraad = appState.voorraad[m.naam]||0;
+        if(m.vorm==="Vloeistof") {
+          let dosering = m.dosering_per_kg * gewicht * dagen;
+          let mlnodig = (dosering) / (m.concentratie_hoeveelheid / m.concentratie_per_ml);
+          let mlvoorraad = voorraad * m.ml_per_verpakking;
+          let bestel_ml = Math.max(0, mlnodig-mlvoorraad);
+          let verpakkingen = bestel_ml>0 ? Math.ceil(bestel_ml/m.ml_per_verpakking) : 0;
+          html += `<div class="med-card">
+            <b>${m.naam}</b><br>
+            Benodigd: ${mlnodig.toFixed(1)} ml<br>
+            Huidige voorraad: ${mlvoorraad.toFixed(1)} ml (${voorraad} verpakkingen)<br>
+            Te bestellen: <b>${verpakkingen}</b> verpakking(en)
+          </div>`;
+          if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
+        } else if(m.vorm==="Pil") {
+          let dosering = m.dosering_per_kg * gewicht * dagen;
+          let pillen_nodig = dosering / m.mg_per_pil;
+          let voorraad_pillen = voorraad * m.pillen_per_verpakking;
+          let te_bestellen = Math.max(0, pillen_nodig-voorraad_pillen);
+          let verpakkingen = te_bestellen>0 ? Math.ceil(te_bestellen/m.pillen_per_verpakking) : 0;
+          html += `<div class="med-card">
+            <b>${m.naam}</b><br>
+            Benodigd: ${pillen_nodig.toFixed(1)} pillen<br>
+            Huidige voorraad: ${voorraad_pillen} pillen (${voorraad} verpakkingen)<br>
+            Te bestellen: <b>${verpakkingen}</b> verpakking(en)
+          </div>`;
+          if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
+        } else {
+          let ampullen_nodig = m.ampullen_per_dag * dagen;
+          let voorraad_ampullen = voorraad * m.ampullen_per_verpakking;
+          let te_bestellen = Math.max(0, ampullen_nodig-voorraad_ampullen);
+          let verpakkingen = te_bestellen>0 ? Math.ceil(te_bestellen/m.ampullen_per_verpakking) : 0;
+          html += `<div class="med-card">
+            <b>${m.naam}</b><br>
+            Benodigd: ${ampullen_nodig.toFixed(1)} ampullen/sachets<br>
+            Huidige voorraad: ${voorraad_ampullen} ampullen/sachets (${voorraad} verpakkingen)<br>
+            Te bestellen: <b>${verpakkingen}</b> verpakking(en)
+          </div>`;
+          if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
+        }
+      });
+      if(bestelregels.length>0) {
+        html += `<div class="bestellijst"><b>Bestellijst:</b><br>${bestelregels.join("<br>")}</div>`;
+      } else {
+        html += `<div class="info">Je hebt voldoende voorraad van alle medicijnen.</div>`;
+      }
+      document.getElementById("bestel-overzicht").innerHTML = html;
+    }
+    function mailBestellijst() {
+      let el = document.querySelector("#bestel-overzicht .bestellijst");
+      let body = el ? el.innerText.replace(/<br>/g,"%0A") : "Geen te bestellen medicatie.";
+      window.location = "mailto:?subject=Medicijnbestelling&body="+encodeURIComponent(body);
+    }
+
+    // ---- SERVICE WORKER ----
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
     }
   </script>
 </body>
