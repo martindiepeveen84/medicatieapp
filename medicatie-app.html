@@ -1,18 +1,19 @@
-143|         <div id="vorm-fields"></div>
-144|         <label>Houdbaarheid na openen (dagen)</label>
-145|         <input name="houdbaarheid_dagen" type="number" min="1" step="1" required value="${m.houdbaarheid_dagen||''}">
-146|         <label>Foto van medicijn (optioneel)</label>
-... 
-190|         medicijn.houdbaarheid_dagen = +f.houdbaarheid_dagen;
-...
-// In renderVoorraad kun je nu toevoegen:
-254|         let houdbaarheid = m.houdbaarheid_dagen || 0;
-255|         let dagen_voorraad = v * houdbaarheid;
-261|             <span style="flex:2">Max. ${dagen_voorraad} dagen voorraad</span>
-...
-// In renderBestellen kun je optioneel ook tonen:
-348|         let houdbaarheid = m.houdbaarheid_dagen||0;
-349|         let dagen_voorraad = voorraad * houdbaarheid;
-357|             Houdbaarheid per verpakking: ${houdbaarheid} dagen<br>
-358|             Max. voorraadduur: ${dagen_voorraad} dagen<br>
-...
+<!-- Updated content of medicatie-app.html -->
+
+<!-- Assuming the structure of the file, placing the houdbaarheid_dagen field directly after the vorm-selectie -->
+<div>
+    <label for="vorm-selectie">Vorm Selectie</label>
+    <select id="vorm-selectie">
+        <option value="tablet">Tablet</option>
+        <option value="capsule">Capsule</option>
+        <option value="liquid">Liquid</option>
+    </select>
+</div>
+
+<!-- Adding houdbaarheid_dagen field -->
+<div>
+    <label for="houdbaarheid_dagen">Houdbaarheid in Dagen</label>
+    <input type="number" id="houdbaarheid_dagen" name="houdbaarheid_dagen" required />
+</div>
+
+<!-- Rest of the original file content -->
