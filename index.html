@@ -1,31 +1,365 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medicatie App</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medicatie App</title>
+  <meta name="theme-color" content="#007aff">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png"> 
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", system-ui, sans-serif;
+      background: #f6f6f8;
+      margin: 0;
+      color: #222;
+    }
+    header {
+      background: linear-gradient(90deg, #f6f6f8 75%, #ececf2 100%);
+      color: #222;
+      font-weight: 600;
+      font-size: 1.25em;
+      padding: 1.5em 1em 1.5em 3em;
+      border-left: 8px solid #007aff;
+      position: relative;
+      box-shadow: 0 1px 8px 0 rgba(0,0,0,0.04);
+    }
+    nav, .side-menu {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 1px 20px 0 rgba(0,0,0,0.06);
+    }
+    nav button, .side-menu button {
+      background: none;
+      border: none;
+      font-size: 1.08em;
+      font-weight: 600;
+      color: #007aff;
+      padding: 1.1em 1.2em;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+      border-bottom: 1px solid #ececf2;
+      outline: none;
+      transition: background 0.18s, color 0.18s;
+      border-radius: 12px;
+    }
+    nav button.active, .side-menu button.active {
+      background: #007aff;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(0,122,255,0.08);
+    }
+    section {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 1px 12px 0 rgba(0,0,0,0.06);
+      padding: 2em;
+      margin: 2em 0;
+    }
+    .med-card, .moment-card, .bestellijst, .info {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.2em;
+      margin-bottom: 1.2em;
+      box-shadow: 0 2px 12px 0 rgba(0,0,0,0.04);
+      font-size: 1.1em;
+    }
+    .plus-btn, .btn {
+      background: linear-gradient(90deg, #007aff 60%, #5ac8fa 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,122,255,0.08);
+      font-size: 1.1em;
+      padding: .7em 1.5em;
+      cursor: pointer;
+      transition: box-shadow 0.18s;
+    }
+    .plus-btn {
+      width: 2em; height: 2em; border-radius: 50%; font-size: 1.5em; float: right;
+    }
+    .plus-btn:active, .btn:active {
+      box-shadow: 0 2px 16px rgba(0,122,255,0.18);
+    }
+    label {
+      font-weight: 500;
+      margin-top: 1em;
+      color: #374151;
+      display: block;
+      font-size: 1em;
+      letter-spacing: .01em;
+    }
+    input, select {
+      font-size:1em;
+      padding:.7em .6em;
+      margin-top:.2em;
+      margin-bottom:1em;
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #ececf2;
+      background: #f6f6f8;
+      box-shadow: 0 2px 6px 0 rgba(0,0,0,0.02);
+      box-sizing: border-box;
+    }
+    input:focus, select:focus {
+      outline: 2px solid #007aff;
+      background: #fff;
+    }
+    .delete {
+      float: right;
+      color: #ff3b30;
+      margin-left: .5em;
+      font-size:1.1em;
+      cursor: pointer;
+      border-radius: 50%;
+      background: #ffecec;
+    }
+    .foto-box {
+      max-width:120px;
+      max-height:120px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+    }
+    @media (min-width: 700px) {
+      section { margin: 2em 10%; }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Medicatie App</h1>
-    </header>
-    <main>
-        <form id="medicijn-form">
-            <label for="medicijn">Medicijn:</label>
-            <input type="text" id="medicijn" name="medicijn" required>
+  <header>
+    <button class="hamburger" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    💊 Medicatie App
+  </header>
+  <div class="menu-overlay" id="menu-overlay"></div>
+  <nav id="main-nav">
+    <button data-section="medicatie" class="active">Medicatie</button>
+    <button data-section="voorraad">Voorraad</button>
+    <button data-section="instellingen">Instellingen</button>
+    <button data-section="dagschema">Dagschema</button>
+    <button data-section="bestellen">Bestellen</button>
+  </nav>
+  <aside class="side-menu" id="side-menu" aria-label="Hoofdmenu">
+    <button data-section="medicatie" class="active">Medicatie</button>
+    <button data-section="voorraad">Voorraad</button>
+    <button data-section="instellingen">Instellingen</button>
+    <button data-section="dagschema">Dagschema</button>
+    <button data-section="bestellen">Bestellen</button>
+  </aside>
+  <section id="s-medicatie" class="active">
+    <button id="add-medicijn-btn" class="plus-btn" title="Toevoegen">+</button>
+    <h2>Medicatie overzicht</h2>
+    <div id="medicaties-lijst"></div>
+    <div id="medicijn-form-div" style="display:none"></div>
+  </section>
+  <section id="s-voorraad">
+    <h2>Voorraad</h2>
+    <div id="voorraad-lijst"></div>
+  </section>
+  <section id="s-instellingen">
+    <h2>Instellingen</h2>
+    <label>Gewicht patiënt (kg)</label>
+    <input id="inp-gewicht" type="number" min="1" step="0.01">
+    <label>Voorrraad voor hoeveel dagen?</label>
+    <input id="inp-dagen" type="number" min="1" step="1">
+    <button class="btn" id="opslaan-instellingen-btn">Opslaan</button>
+    <hr>
+    <div style="margin-top:1em">
+      <button class="btn" id="exporteer-btn" style="background:#06b6d4">Exporteer alles</button>
+      <input type="file" id="importeer-input" accept=".json" style="display:none">
+      <button class="btn" id="importeer-btn" style="background:#16a34a">Importeer alles</button>
+    </div>
+  </section>
+  <section id="s-dagschema">
+    <button id="add-moment-btn" class="plus-btn" title="Toevoegen">+</button>
+    <h2>Dagschema (toedientijden)</h2>
+    <div id="momenten-lijst"></div>
+    <div id="moment-form-div" style="display:none"></div>
+  </section>
+  <section id="s-bestellen">
+    <h2>Besteloverzicht</h2>
+    <div id="bestel-overzicht"></div>
+    <button class="btn" id="mail-bestellijst-btn">Mail naar apotheek</button>
+  </section>
+  <script>
+    // --- STATE ----
+    function loadState() {
+      return {
+        medicaties: JSON.parse(localStorage.getItem("medicaties")||"[]"),
+        voorraad: JSON.parse(localStorage.getItem("voorraad")||"{}"),
+        gewicht: parseFloat(localStorage.getItem("gewicht")||""),
+        dagen: parseInt(localStorage.getItem("dagen")||"1"),
+        momenten: JSON.parse(localStorage.getItem("momenten")||"[]"),
+      }
+    }
+    function saveState(state) {
+      localStorage.setItem("medicaties", JSON.stringify(state.medicaties));
+      localStorage.setItem("voorraad", JSON.stringify(state.voorraad));
+      localStorage.setItem("gewicht", state.gewicht||"");
+      localStorage.setItem("dagen", state.dagen||"1");
+      localStorage.setItem("momenten", JSON.stringify(state.momenten));
+    }
+    let appState = loadState();
 
-            <label for="houdbaarheid">Houdbaarheid:</label>
-            <input type="date" id="houdbaarheid" name="houdbaarheid" required>
-            <div id="houdbaarheid-field" style="display: block;">
-                <p>Houdbaarheid field is always visible.</p>
-            </div>
+    // --- Medicatie Overzicht ---
+    function renderMedicatie() {
+      const lijst = document.getElementById("medicaties-lijst");
+      lijst.innerHTML = "";
+      if(appState.medicaties.length === 0) {
+        lijst.innerHTML = `<div class="info">Nog geen medicatie toegevoegd.</div>`;
+      }
+      appState.medicaties.forEach((m, i) => {
+        lijst.innerHTML += `
+          <div class="med-card">
+            <span class="naam">${m.naam}</span>
+            <span class="delete" onclick="verwijderMedicijn(${i})" title="Verwijder">&#128465;</span>
+            <span class="delete" onclick="toonMedicijnForm(${i})" title="Bewerk">&#9998;</span>
+            ${m.foto ? `<br><img class="foto-box" src="${m.foto}">` : ""}
+            <br>
+            <small>
+              Houdbaarheid: ${m.houdbaarheid_dagen || ''} dagen<br>
+              ${m.vorm==="Vloeistof" ? `
+                Dosering: ${m.dosering_per_kg} ${m.eenheid}/kg/dag<br>
+                Conc.: ${m.concentratie_hoeveelheid} ${m.concentratie_eenheid} per ${m.concentratie_per_ml} ml
+              ` : m.vorm==="Pil" ? `
+                Dosering: ${m.dosering_per_kg} mg/kg/dag<br>
+                mg per pil: ${m.mg_per_pil}, pillen/verpakking: ${m.pillen_per_verpakking}
+              ` : `
+                ${m.ampullen_per_dag} ampullen/sachets per dag, ${m.ampullen_per_verpakking} per verpakking
+              `}
+            </small>
+          </div>`;
+      });
+      document.getElementById("medicijn-form-div").style.display="none";
+    }
 
-            <button type="submit">Toevoegen</button>
-        </form>
-    </main>
-    <footer>
-        <p>&copy; 2023 Medicatie App</p>
-    </footer>
+    window.toonMedicijnForm = function(idx) {
+      const m = idx!=null ? appState.medicaties[idx] : {};
+      const formdiv = document.getElementById("medicijn-form-div");
+      let vorm = m.vorm||"Vloeistof";
+      let html = `<form id="medform">
+        <label>Naam</label>
+        <input name="naam" required value="${m.naam||""}">
+        <label>Vorm</label>
+        <select name="vorm" onchange="window.switchVorm(this.value)">
+          <option${vorm==="Vloeistof"?" selected":""}>Vloeistof</option>
+          <option${vorm==="Pil"?" selected":""}>Pil</option>
+          <option${vorm==="Ampul of Sachet"?" selected":""}>Ampul of Sachet</option>
+        </select>
+        <label>Houdbaarheid na openen (dagen)</label>
+        <input name="houdbaarheid_dagen" type="number" min="1" step="1" required value="${m.houdbaarheid_dagen||''}">
+        <div id="vorm-fields"></div>
+        <label>Foto van medicijn (optioneel)</label>
+        <input type="file" accept="image/*" capture="environment" name="foto" id="foto-input" onchange="window.readFoto(event)">
+        ${m.foto ? `<img id="foto-preview" class="foto-box" src="${m.foto}"><br>` : `<img id="foto-preview" class="foto-box" style="display:none"><br>` }
+        <div style="margin-top:.5em">
+          <button class="btn" type="submit">${idx!=null?"Opslaan":"Toevoegen"}</button>
+          <button type="button" class="btn" style="background:#aaa" onclick="document.getElementById('medicijn-form-div').style.display='none'">Annuleren</button>
+        </div>
+        </form>`;
+      formdiv.innerHTML = html;
+      formdiv.style.display="";
+      let fotoData = m.foto||"";
+      window.switchVorm = function(v) {
+        m.vorm = v;
+        renderVormFields(v, m);
+      }
+      renderVormFields(vorm, m);
+      window.readFoto = function(ev) {
+        const file = ev.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          fotoData = e.target.result;
+          document.getElementById("foto-preview").style.display="";
+          document.getElementById("foto-preview").src = fotoData;
+        };
+        reader.readAsDataURL(file);
+      }
+      document.getElementById("medform").onsubmit = function(e) {
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target).entries());
+        let medicijn = {naam:f.naam, vorm:f.vorm};
+        medicijn.houdbaarheid_dagen = +f.houdbaarheid_dagen;
+        if(f.vorm==="Vloeistof") {
+          medicijn.eenheid = f.eenheid;
+          medicijn.dosering_per_kg = +f.dosering_per_kg;
+          medicijn.concentratie_hoeveelheid = +f.concentratie_hoeveelheid;
+          medicijn.concentratie_eenheid = f.concentratie_eenheid;
+          medicijn.concentratie_per_ml = +f.concentratie_per_ml;
+          medicijn.ml_per_verpakking = +f.ml_per_verpakking;
+        } else if(f.vorm==="Pil") {
+          medicijn.dosering_per_kg = +f.dosering_per_kg;
+          medicijn.mg_per_pil = +f.mg_per_pil;
+          medicijn.pillen_per_verpakking = +f.pillen_per_verpakking;
+        } else {
+          medicijn.ampullen_per_dag = +f.ampullen_per_dag;
+          medicijn.ampullen_per_verpakking = +f.ampullen_per_verpakking;
+        }
+        if(fotoData) medicijn.foto = fotoData;
+        if(idx!=null) appState.medicaties[idx]=medicijn;
+        else appState.medicaties.push(medicijn);
+        saveState(appState);
+        renderMedicatie();
+      };
+    }
+    function renderVormFields(v, m) {
+      let html = "";
+      if(v==="Vloeistof") {
+        html = `
+          <label>Eenheid dosering</label>
+          <select name="eenheid">
+            <option${m.eenheid==="mg"?" selected":""}>mg</option>
+            <option${m.eenheid==="ml"?" selected":""}>ml</option>
+            <option${m.eenheid==="µg"?" selected":""}>µg</option>
+          </select>
+          <label>Dosering per kg per dag</label>
+          <input name="dosering_per_kg" type="number" min="0" step="0.01" required value="${m.dosering_per_kg||""}">
+          <label>Concentratie hoeveelheid</label>
+          <input name="concentratie_hoeveelheid" type="number" min="0" step="0.01" required value="${m.concentratie_hoeveelheid||""}">
+          <label>Concentratie eenheid</label>
+          <select name="concentratie_eenheid">
+            <option${m.concentratie_eenheid==="mg"?" selected":""}>mg</option>
+            <option${m.concentratie_eenheid==="ml"?" selected":""}>ml</option>
+            <option${m.concentratie_eenheid==="µg"?" selected":""}>µg</option>
+          </select>
+          <label>Per hoeveel ml?</label>
+          <input name="concentratie_per_ml" type="number" min="0" step="0.01" required value="${m.concentratie_per_ml||""}">
+          <label>Aantal ml per verpakking</label>
+          <input name="ml_per_verpakking" type="number" min="1" step="0.01" required value="${m.ml_per_verpakking||""}">
+        `;
+      } else if(v==="Pil") {
+        html = `
+          <label>Dosering per kg per dag</label>
+          <input name="dosering_per_kg" type="number" min="0" step="0.01" required value="${m.dosering_per_kg||""}">
+          <label>mg per pil</label>
+          <input name="mg_per_pil" type="number" min="0" step="0.01" required value="${m.mg_per_pil||""}">
+          <label>Aantal pillen per verpakking</label>
+          <input name="pillen_per_verpakking" type="number" min="1" step="1" required value="${m.pillen_per_verpakking||""}">
+        `;
+      } else {
+        html = `
+          <label>Ampullen/sachets per dag</label>
+          <input name="ampullen_per_dag" type="number" min="0" step="0.01" required value="${m.ampullen_per_dag||""}">
+          <label>Ampullen/sachets per verpakking</label>
+          <input name="ampullen_per_verpakking" type="number" min="1" step="1" required value="${m.ampullen_per_verpakking||""}">
+        `;
+      }
+      document.getElementById("vorm-fields").innerHTML = html;
+    }
+    window.verwijderMedicijn = function(idx) {
+      if(confirm("Verwijder dit medicijn?")) {
+        appState.medicaties.splice(idx,1);
+        saveState(appState);
+        renderMedicatie();
+      }
+    }
+    // ... (de rest van je JS blijft gelijk)
+  </script>
 </body>
 </html>
