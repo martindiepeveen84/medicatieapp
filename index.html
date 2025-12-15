@@ -4,129 +4,100 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Medicatie App</title>
-  <meta name="theme-color" content="#007aff">
+  <meta name="theme-color" content="#6366f1">
   <link rel="manifest" href="manifest.json">
+    <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
   <link rel="icon" type="image/png" sizes="32x32" href="icon-192.png">
+  <!-- Apple Touch Icon -->
   <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png"> 
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", system-ui, sans-serif;
-      background: #f6f6f8;
-      margin: 0;
-      color: #222;
+    body { font-family: system-ui, sans-serif; background: #f3f4f6; margin: 0;}
+    header { background: linear-gradient(90deg, #e0e7ff 60%, #f3f4f6 100%); color: #222;
+      font-weight: bold; font-size: 1.2em; padding: 1em 1em 1em 3em; border-left: 6px solid #6366f1; position: relative;}
+
+    /* Hamburger icon */
+    .hamburger {
+      position: absolute;
+      left: 0.75em; top: 1em; width: 2em; height: 2em; background: none; border: none;
+      z-index: 50; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center;
     }
-    header {
-      background: linear-gradient(90deg, #f6f6f8 75%, #ececf2 100%);
-      color: #222;
-      font-weight: 600;
-      font-size: 1.25em;
-      padding: 1.5em 1em 1.5em 3em;
-      border-left: 8px solid #007aff;
-      position: relative;
-      box-shadow: 0 1px 8px 0 rgba(0,0,0,0.04);
+    .hamburger span {
+      width: 1.6em; height: 0.25em; background: #6366f1; margin: 0.18em 0; border-radius: 2px; display: block; transition: all 0.3s;
     }
-    nav, .side-menu {
-      background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 1px 20px 0 rgba(0,0,0,0.06);
+    /* Hamburger animatie als open */
+    .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(7px,7px);}
+    .hamburger.open span:nth-child(2) { opacity: 0;}
+    .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(7px,-7px);}
+
+    /* Side menu (drawer) */
+    .side-menu {
+      position: fixed; top: 0; left: 0; height: 100vh; width: 220px;
+      background: #e0e7ff; box-shadow: 2px 0 16px #2221; z-index: 100;
+      transform: translateX(-100%); transition: transform 0.25s;
+      display: flex; flex-direction: column; padding-top: 4em;
     }
-    nav button, .side-menu button {
-      background: none;
-      border: none;
-      font-size: 1.08em;
-      font-weight: 600;
-      color: #007aff;
-      padding: 1.1em 1.2em;
-      text-align: left;
-      width: 100%;
-      cursor: pointer;
-      border-bottom: 1px solid #ececf2;
-      outline: none;
-      transition: background 0.18s, color 0.18s;
-      border-radius: 12px;
+    .side-menu.open { transform: translateX(0);}
+    .side-menu button {
+      background: none; border: none; font-size: 1.08em; font-weight: bold; color: #222;
+      padding: 1.1em 1.2em; text-align: left; width: 100%; cursor: pointer;
+      border-bottom: 1px solid #c7d2fe;
+      outline: none; transition: background 0.15s;
     }
-    nav button.active, .side-menu button.active {
-      background: #007aff;
-      color: #fff;
-      box-shadow: 0 4px 14px rgba(0,122,255,0.08);
+    .side-menu button.active, .side-menu button:active {
+      background: #6366f1; color: #fff; border-radius: 0 1.2em 1.2em 0;
     }
-    section {
-      background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 1px 12px 0 rgba(0,0,0,0.06);
-      padding: 2em;
-      margin: 2em 0;
+
+    /* Overlay when open */
+    .menu-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(60,60,80,0.18);
+      z-index: 90;
     }
-    .med-card, .moment-card, .bestellijst, .info {
-      background: #fff;
-      border-radius: 16px;
-      padding: 1.2em;
-      margin-bottom: 1.2em;
-      box-shadow: 0 2px 12px 0 rgba(0,0,0,0.04);
-      font-size: 1.1em;
-    }
-    .plus-btn, .btn {
-      background: linear-gradient(90deg, #007aff 60%, #5ac8fa 100%);
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-weight: 600;
-      box-shadow: 0 2px 8px rgba(0,122,255,0.08);
-      font-size: 1.1em;
-      padding: .7em 1.5em;
-      cursor: pointer;
-      transition: box-shadow 0.18s;
-    }
-    .plus-btn {
-      width: 2em; height: 2em; border-radius: 50%; font-size: 1.5em; float: right;
-    }
-    .plus-btn:active, .btn:active {
-      box-shadow: 0 2px 16px rgba(0,122,255,0.18);
-    }
-    label {
-      font-weight: 500;
-      margin-top: 1em;
-      color: #374151;
-      display: block;
-      font-size: 1em;
-      letter-spacing: .01em;
-    }
-    input, select {
-      font-size:1em;
-      padding:.7em .6em;
-      margin-top:.2em;
-      margin-bottom:1em;
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid #ececf2;
-      background: #f6f6f8;
-      box-shadow: 0 2px 6px 0 rgba(0,0,0,0.02);
-      box-sizing: border-box;
-    }
-    input:focus, select:focus {
-      outline: 2px solid #007aff;
-      background: #fff;
-    }
-    .delete {
-      float: right;
-      color: #ff3b30;
-      margin-left: .5em;
-      font-size:1.1em;
-      cursor: pointer;
-      border-radius: 50%;
-      background: #ffecec;
-    }
-    .foto-box {
-      max-width:120px;
-      max-height:120px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
-    }
+    .menu-overlay.open { display: block;}
+
+    /* Hide old nav bar for mobile, show only for wide screens */
+    nav { display: none;}
     @media (min-width: 700px) {
-      section { margin: 2em 10%; }
+      .hamburger { display: none;}
+      .side-menu { display: none;}
+      nav { display: flex; overflow-x: auto; background: #e0e7ff; border-bottom: 2px solid #6366f1; -webkit-overflow-scrolling: touch; scrollbar-width: none;}
+      nav::-webkit-scrollbar { display: none; }
+      nav button {
+        flex: 0 0 auto;
+        padding: 0.7em 1em;
+        background: none;
+        border: none;
+        font-size: 1em;
+        cursor: pointer;
+        font-weight: bold;
+        border-radius: 0;
+        min-width: 90px;
+      }
+      nav button.active {
+        color: #fff;
+        background: #6366f1;
+        border-radius: 0 0 1em 1em;
+      }
     }
+
+    section { display: none; padding: 1em; }
+    section.active { display: block; }
+    .med-card { background: #fff; margin: .75em 0; padding: .75em; border-radius: 8px; box-shadow: 0 2px 8px #6366f122; }
+    .med-card .naam { font-weight: bold; color: #4338ca; }
+    .plus-btn { float: right; background: #6366f1; color: #fff; border: none; border-radius: 50%; width: 2em; height: 2em; font-size: 1.4em; }
+    label { font-weight: 500; margin-top: 1em; color: #374151; display: block; }
+    input, select { font-size:1em; padding:.5em; margin-top:.2em; margin-bottom:.8em; width: 100%; border-radius: 6px; border: 1px solid #c7d2fe; box-sizing: border-box; }
+    .btn { background: #6366f1; color: #fff; border: none; border-radius: 6px; padding: .6em 1.5em; font-weight: bold; font-size: 1em; cursor: pointer; }
+    .btn:active { background: #4338ca; }
+    .delete { float: right; color: #dc2626; margin-left: .5em; font-size:1.1em; cursor: pointer; }
+    .bestellijst { background: #e0e7ff; border-radius: 8px; padding: 1em 1.2em; margin: 1em 0; border-left: 5px solid #6366f1; font-size: 1.1em; }
+    .info { background:#fff8; border-left:4px solid #6366f1; padding:.5em 1em; border-radius:4px; margin:1em 0;}
+    .flex { display: flex; gap: .8em; align-items: center; }
+    .foto-box {max-width:120px; max-height:120px;}
+    .moment-card {background:#fff; margin:.75em 0; padding:.75em; border-radius:8px;}
   </style>
 </head>
 <body>
@@ -152,6 +123,7 @@
     <button data-section="dagschema">Dagschema</button>
     <button data-section="bestellen">Bestellen</button>
   </aside>
+
   <!-- Medicatie Overzicht -->
   <section id="s-medicatie" class="active">
     <button id="add-medicijn-btn" class="plus-btn" title="Toevoegen">+</button>
@@ -193,12 +165,502 @@
     <button class="btn" id="mail-bestellijst-btn">Mail naar apotheek</button>
   </section>
   <script>
-    // ... (de rest van je JS blijft gelijk, maar in het medicijnformulier moet je het veld toevoegen:)
-    // In toonMedicijnForm:
-    // Voeg direct na vorm-selectie toe:
-    // <label>Houdbaarheid na openen (dagen)</label>
-    // <input name="houdbaarheid_dagen" type="number" min="1" step="1" required value="${m.houdbaarheid_dagen||''}">
-    // En in het JS-model: medicijn.houdbaarheid_dagen = +f.houdbaarheid_dagen;
+    // ---- STATE ----
+    function loadState() {
+      return {
+        medicaties: JSON.parse(localStorage.getItem("medicaties")||"[]"),
+        voorraad: JSON.parse(localStorage.getItem("voorraad")||"{}"),
+        gewicht: parseFloat(localStorage.getItem("gewicht")||""),
+        dagen: parseInt(localStorage.getItem("dagen")||"1"),
+        momenten: JSON.parse(localStorage.getItem("momenten")||"[]"),
+      }
+    }
+    function saveState(state) {
+      localStorage.setItem("medicaties", JSON.stringify(state.medicaties));
+      localStorage.setItem("voorraad", JSON.stringify(state.voorraad));
+      localStorage.setItem("gewicht", state.gewicht||"");
+      localStorage.setItem("dagen", state.dagen||"1");
+      localStorage.setItem("momenten", JSON.stringify(state.momenten));
+    }
+    let appState = loadState();
+
+    // ---- EVENT HANDLERS ----
+    document.addEventListener('DOMContentLoaded', function() {
+      // Hamburger menu
+      const hamburger = document.getElementById('hamburger-btn');
+      const sideMenu = document.getElementById('side-menu');
+      const overlay = document.getElementById('menu-overlay');
+      function closeMenu() {
+        hamburger.classList.remove('open');
+        sideMenu.classList.remove('open');
+        overlay.classList.remove('open');
+        hamburger.setAttribute('aria-expanded','false');
+      }
+      function openMenu() {
+        hamburger.classList.add('open');
+        sideMenu.classList.add('open');
+        overlay.classList.add('open');
+        hamburger.setAttribute('aria-expanded','true');
+      }
+      hamburger.addEventListener('click', function() {
+        if (sideMenu.classList.contains('open')) closeMenu();
+        else openMenu();
+      });
+      overlay.addEventListener('click', closeMenu);
+
+      // Nav & side-menu
+      const menuSections = ["medicatie", "voorraad", "instellingen", "dagschema", "bestellen"];
+      // Nav bar (desktop)
+      document.querySelectorAll('#main-nav button').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('active'));
+          document.querySelectorAll('#side-menu button').forEach(b=>b.classList.remove('active'));
+          this.classList.add('active');
+          document.querySelector(`#side-menu button[data-section="${this.dataset.section}"]`).classList.add('active');
+          menuSections.forEach(s=>{
+            document.getElementById('s-'+s).classList.remove('active');
+          });
+          document.getElementById('s-'+this.dataset.section).classList.add('active');
+          if(this.dataset.section==="medicatie") renderMedicatie();
+          if(this.dataset.section==="voorraad") renderVoorraad();
+          if(this.dataset.section==="instellingen") renderInstellingen();
+          if(this.dataset.section==="bestellen") renderBestellen();
+          if(this.dataset.section==="dagschema") renderMomenten();
+        });
+      });
+      // Side drawer (mobiel)
+      document.querySelectorAll('#side-menu button').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('active'));
+          document.querySelectorAll('#side-menu button').forEach(b=>b.classList.remove('active'));
+          this.classList.add('active');
+          document.querySelector(`#main-nav button[data-section="${this.dataset.section}"]`).classList.add('active');
+          menuSections.forEach(s=>{
+            document.getElementById('s-'+s).classList.remove('active');
+          });
+          document.getElementById('s-'+this.dataset.section).classList.add('active');
+          closeMenu();
+          if(this.dataset.section==="medicatie") renderMedicatie();
+          if(this.dataset.section==="voorraad") renderVoorraad();
+          if(this.dataset.section==="instellingen") renderInstellingen();
+          if(this.dataset.section==="bestellen") renderBestellen();
+          if(this.dataset.section==="dagschema") renderMomenten();
+        });
+      });
+      // Medicijn toevoegen
+      document.getElementById('add-medicijn-btn').addEventListener('click', function() {
+        toonMedicijnForm();
+      });
+      // Opslaan instellingen
+      document.getElementById('opslaan-instellingen-btn').addEventListener('click', function() {
+        slaInstellingenOp();
+      });
+      // Moment toevoegen
+      document.getElementById('add-moment-btn').addEventListener('click', function() {
+        toonMomentForm();
+      });
+      // Mail bestel
+      document.getElementById('mail-bestellijst-btn').addEventListener('click', function() {
+        mailBestellijst();
+      });
+
+      // Initial renders
+      renderMedicatie();
+    });
+
+    // ---- MEDICATIE ----
+    function renderMedicatie() {
+      const lijst = document.getElementById("medicaties-lijst");
+      lijst.innerHTML = "";
+      if(appState.medicaties.length === 0) {
+        lijst.innerHTML = `<div class="info">Nog geen medicatie toegevoegd.</div>`;
+      }
+      appState.medicaties.forEach((m, i) => {
+        // Card
+        let card = document.createElement('div');
+        card.className = "med-card";
+        card.innerHTML = `
+          <span class="naam">${m.naam}</span>
+          <span class="delete" title="Verwijder">&#128465;</span>
+          <span class="delete" title="Bewerk">&#9998;</span>
+          ${m.foto ? `<br><img class="foto-box" src="${m.foto}">` : ""}
+          <br>
+          <small>
+            ${m.vorm==="Vloeistof" ? `
+              Dosering: ${m.dosering_per_kg} ${m.eenheid}/kg/dag<br>
+              Conc.: ${m.concentratie_hoeveelheid} ${m.concentratie_eenheid} per ${m.concentratie_per_ml} ml
+            ` : m.vorm==="Pil" ? `
+              Dosering: ${m.dosering_per_kg} mg/kg/dag<br>
+              mg per pil: ${m.mg_per_pil}, pillen/verpakking: ${m.pillen_per_verpakking}
+            ` : `
+              ${m.ampullen_per_dag} ampullen/sachets per dag, ${m.ampullen_per_verpakking} per verpakking
+            `}
+          </small>
+        `;
+        // Verwijder
+        card.querySelectorAll('.delete')[0].addEventListener('click', function() {
+          if(confirm("Verwijder dit medicijn?")) {
+            appState.medicaties.splice(i,1);
+            saveState(appState);
+            renderMedicatie();
+          }
+        });
+        // Bewerken
+        card.querySelectorAll('.delete')[1].addEventListener('click', function() {
+          toonMedicijnForm(i);
+        });
+        lijst.appendChild(card);
+      });
+      document.getElementById("medicijn-form-div").style.display="none";
+    }
+    function toonMedicijnForm(idx) {
+      const m = idx!=null ? appState.medicaties[idx] : {};
+      const formdiv = document.getElementById("medicijn-form-div");
+      let vorm = m.vorm||"Vloeistof";
+      let html = `<form id="medform">
+        <label>Naam</label>
+        <input name="naam" required value="${m.naam||""}">
+        <label>Vorm</label>
+        <select name="vorm">
+          <option${vorm==="Vloeistof"?" selected":""}>Vloeistof</option>
+          <option${vorm==="Pil"?" selected":""}>Pil</option>
+          <option${vorm==="Ampul of Sachet"?" selected":""}>Ampul of Sachet</option>
+        </select>
+        <div id="vorm-fields"></div>
+        <label>Foto van medicijn (optioneel)</label>
+        <input type="file" accept="image/*" capture="environment" name="foto" id="foto-input">
+        ${m.foto ? `<img id="foto-preview" class="foto-box" src="${m.foto}"><br>` : `<img id="foto-preview" class="foto-box" style="display:none"><br>` }
+        <div style="margin-top:.5em">
+          <button class="btn" type="submit">${idx!=null?"Opslaan":"Toevoegen"}</button>
+          <button type="button" class="btn" style="background:#aaa" id="annuleer-med-btn">Annuleren</button>
+        </div>
+        </form>`;
+      formdiv.innerHTML = html;
+      formdiv.style.display="";
+      let fotoData = m.foto||"";
+      // Vorm wisselen
+      function renderVormFields(v, m) {
+        let html = "";
+        if(v==="Vloeistof") {
+          html = `
+            <label>Eenheid dosering</label>
+            <select name="eenheid">
+              <option${m.eenheid==="mg"?" selected":""}>mg</option>
+              <option${m.eenheid==="ml"?" selected":""}>ml</option>
+              <option${m.eenheid==="µg"?" selected":""}>µg</option>
+            </select>
+            <label>Dosering per kg per dag</label>
+            <input name="dosering_per_kg" type="number" min="0" step="0.01" required value="${m.dosering_per_kg||""}">
+            <label>Concentratie hoeveelheid</label>
+            <input name="concentratie_hoeveelheid" type="number" min="0" step="0.01" required value="${m.concentratie_hoeveelheid||""}">
+            <label>Concentratie eenheid</label>
+            <select name="concentratie_eenheid">
+              <option${m.concentratie_eenheid==="mg"?" selected":""}>mg</option>
+              <option${m.concentratie_eenheid==="ml"?" selected":""}>ml</option>
+              <option${m.concentratie_eenheid==="µg"?" selected":""}>µg</option>
+            </select>
+            <label>Per hoeveel ml?</label>
+            <input name="concentratie_per_ml" type="number" min="0" step="0.01" required value="${m.concentratie_per_ml||""}">
+            <label>Aantal ml per verpakking</label>
+            <input name="ml_per_verpakking" type="number" min="1" step="0.01" required value="${m.ml_per_verpakking||""}">
+          `;
+        } else if(v==="Pil") {
+          html = `
+            <label>Dosering per kg per dag</label>
+            <input name="dosering_per_kg" type="number" min="0" step="0.01" required value="${m.dosering_per_kg||""}">
+            <label>mg per pil</label>
+            <input name="mg_per_pil" type="number" min="0" step="0.01" required value="${m.mg_per_pil||""}">
+            <label>Aantal pillen per verpakking</label>
+            <input name="pillen_per_verpakking" type="number" min="1" step="1" required value="${m.pillen_per_verpakking||""}">
+          `;
+        } else {
+          html = `
+            <label>Ampullen/sachets per dag</label>
+            <input name="ampullen_per_dag" type="number" min="0" step="0.01" required value="${m.ampullen_per_dag||""}">
+            <label>Ampullen/sachets per verpakking</label>
+            <input name="ampullen_per_verpakking" type="number" min="1" step="1" required value="${m.ampullen_per_verpakking||""}">
+          `;
+        }
+        document.getElementById("vorm-fields").innerHTML = html;
+      }
+      renderVormFields(vorm, m);
+      formdiv.querySelector('select[name="vorm"]').addEventListener('change', function() {
+        renderVormFields(this.value, m);
+      });
+      // Foto
+      let fotoInput = formdiv.querySelector('#foto-input');
+      fotoInput.addEventListener('change', function(ev) {
+        const file = ev.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          fotoData = e.target.result;
+          let p = formdiv.querySelector("#foto-preview");
+          p.style.display="";
+          p.src = fotoData;
+        };
+        reader.readAsDataURL(file);
+      });
+      // Annuleren
+      formdiv.querySelector('#annuleer-med-btn').addEventListener('click', function() {
+        formdiv.style.display="none";
+      });
+      // Submit
+      formdiv.querySelector("#medform").onsubmit = function(e) {
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target).entries());
+        let medicijn = {naam:f.naam, vorm:f.vorm};
+        if(f.vorm==="Vloeistof") {
+          medicijn.eenheid = f.eenheid;
+          medicijn.dosering_per_kg = +f.dosering_per_kg;
+          medicijn.concentratie_hoeveelheid = +f.concentratie_hoeveelheid;
+          medicijn.concentratie_eenheid = f.concentratie_eenheid;
+          medicijn.concentratie_per_ml = +f.concentratie_per_ml;
+          medicijn.ml_per_verpakking = +f.ml_per_verpakking;
+        } else if(f.vorm==="Pil") {
+          medicijn.dosering_per_kg = +f.dosering_per_kg;
+          medicijn.mg_per_pil = +f.mg_per_pil;
+          medicijn.pillen_per_verpakking = +f.pillen_per_verpakking;
+        } else {
+          medicijn.ampullen_per_dag = +f.ampullen_per_dag;
+          medicijn.ampullen_per_verpakking = +f.ampullen_per_verpakking;
+        }
+        if(fotoData) medicijn.foto = fotoData;
+        if(idx!=null) appState.medicaties[idx]=medicijn;
+        else appState.medicaties.push(medicijn);
+        saveState(appState);
+        renderMedicatie();
+      };
+    }
+
+    // ---- VOORRAAD ----
+    function renderVoorraad() {
+      let html = "";
+      appState.medicaties.forEach((m,i) => {
+        let v = appState.voorraad[m.naam] || 0;
+        html += `
+          <div class="med-card flex">
+            <span style="flex:2">${m.naam}</span>
+            <input style="width:6em" type="number" min="0" step="1" value="${v}" data-mednaam="${m.naam}">
+            <span>verpakkingen</span>
+          </div>`;
+      });
+      if(appState.medicaties.length===0) html = `<div class="info">Nog geen medicatie toegevoegd.</div>`;
+      document.getElementById("voorraad-lijst").innerHTML = html;
+      // Koppel events
+      document.querySelectorAll('#voorraad-lijst input[type="number"]').forEach(inp => {
+        inp.addEventListener('change', function() {
+          appState.voorraad[this.dataset.mednaam] = parseInt(this.value)||0;
+          saveState(appState);
+        });
+      });
+    }
+
+    // ---- INSTELLINGEN ----
+    function renderInstellingen() {
+      document.getElementById("inp-gewicht").value = appState.gewicht||"";
+      document.getElementById("inp-dagen").value = appState.dagen||"1";
+      // Koppel export/import knoppen (eenmalig)
+      if (!renderInstellingen.bound) {
+        document.getElementById("exporteer-btn").addEventListener("click", function() {
+          const data = {
+            medicaties: appState.medicaties,
+            voorraad: appState.voorraad,
+            gewicht: appState.gewicht,
+            dagen: appState.dagen,
+            momenten: appState.momenten
+          };
+          const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "medicatieapp-export.json";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500);
+        });
+        document.getElementById("importeer-btn").addEventListener("click", function() {
+          document.getElementById("importeer-input").click();
+        });
+        document.getElementById("importeer-input").addEventListener("change", function(ev) {
+          const file = ev.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            try {
+              const data = JSON.parse(e.target.result);
+              if (
+                typeof data === "object" &&
+                Array.isArray(data.medicaties) &&
+                typeof data.voorraad === "object" &&
+                (typeof data.gewicht === "number" || data.gewicht === "") &&
+                typeof data.dagen === "number" &&
+                Array.isArray(data.momenten)
+              ) {
+                if (confirm("Weet je zeker dat je alle gegevens wilt overschrijven met deze import?")) {
+                  appState = {
+                    medicaties: data.medicaties,
+                    voorraad: data.voorraad,
+                    gewicht: data.gewicht,
+                    dagen: data.dagen,
+                    momenten: data.momenten
+                  };
+                  saveState(appState);
+                  alert("Import succesvol! De app wordt herladen.");
+                  location.reload();
+                }
+              } else {
+                alert("Bestand is geen geldige Medicatie App export.");
+              }
+            } catch (err) {
+              alert("Fout bij importeren: " + err.message);
+            }
+          };
+          reader.readAsText(file);
+          // Reset input zodat je opnieuw kunt importeren als nodig
+          ev.target.value = "";
+        });
+        renderInstellingen.bound = true;
+      }
+    }
+    function slaInstellingenOp() {
+      appState.gewicht = parseFloat(document.getElementById("inp-gewicht").value)||"";
+      appState.dagen = parseInt(document.getElementById("inp-dagen").value)||1;
+      saveState(appState);
+      alert("Instellingen opgeslagen!");
+    }
+
+    // ---- DAGSCHEMA ----
+    function renderMomenten() {
+      const lijst = document.getElementById("momenten-lijst");
+      lijst.innerHTML = "";
+      if(appState.momenten.length === 0) {
+        lijst.innerHTML = `<div class="info">Nog geen toedientijden toegevoegd.</div>`;
+      }
+      appState.momenten
+        .sort((a,b)=>a.tijd.localeCompare(b.tijd))
+        .forEach((m, i) => {
+        let card = document.createElement('div');
+        card.className = 'moment-card';
+        card.innerHTML = `
+          <b>${m.tijd}</b> - ${m.medicijn} ${m.hoeveelheid?`(${m.hoeveelheid})`:""}
+          <span class="delete" title="Verwijder">&#128465;</span>
+        `;
+        card.querySelector('.delete').addEventListener('click', function() {
+          if(confirm("Moment verwijderen?")) {
+            appState.momenten.splice(i,1);
+            saveState(appState);
+            renderMomenten();
+          }
+        });
+        lijst.appendChild(card);
+      });
+      document.getElementById("moment-form-div").style.display="none";
+    }
+    function toonMomentForm(idx) {
+      const m = idx!=null ? appState.momenten[idx] : {};
+      const formdiv = document.getElementById("moment-form-div");
+      let html = `<form id="momentform">
+        <label>Tijdstip</label>
+        <input name="tijd" type="time" required value="${m.tijd||""}">
+        <label>Medicijn</label>
+        <select name="medicijn" required>
+          <option value="" disabled${!m.medicijn?" selected":""}>Kies een medicijn</option>
+          ${appState.medicaties.map(x=>`<option${m.medicijn===x.naam?" selected":""}>${x.naam}</option>`).join("")}
+        </select>
+        <label>Hoeveelheid (optioneel)</label>
+        <input name="hoeveelheid" value="${m.hoeveelheid||""}">
+        <div style="margin-top:.5em">
+          <button class="btn" type="submit">${idx!=null?"Opslaan":"Toevoegen"}</button>
+          <button type="button" class="btn" style="background:#aaa" id="annuleer-moment-btn">Annuleren</button>
+        </div>
+        </form>`;
+      formdiv.innerHTML = html;
+      formdiv.style.display="";
+      // Annuleren
+      formdiv.querySelector('#annuleer-moment-btn').addEventListener('click', function() {
+        formdiv.style.display="none";
+      });
+      // Submit
+      formdiv.querySelector("#momentform").onsubmit = function(e) {
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target).entries());
+        let moment = {tijd:f.tijd, medicijn:f.medicijn, hoeveelheid:f.hoeveelheid};
+        if(idx!=null) appState.momenten[idx]=moment;
+        else appState.momenten.push(moment);
+        saveState(appState);
+        renderMomenten();
+      };
+    }
+
+    // ---- BESTELLEN ----
+    function renderBestellen() {
+      let gewicht = appState.gewicht, dagen = appState.dagen;
+      if(!gewicht||!dagen) {
+        document.getElementById("bestel-overzicht").innerHTML = `<div class="info">Vul eerst gewicht en dagen in onder Instellingen.</div>`;
+        return;
+      }
+      let html = "";
+      let bestelregels = [];
+      appState.medicaties.forEach(m=>{
+        let voorraad = appState.voorraad[m.naam]||0;
+        if(m.vorm==="Vloeistof") {
+          let dosering = m.dosering_per_kg * gewicht * dagen;
+          let mlnodig = (dosering) / (m.concentratie_hoeveelheid / m.concentratie_per_ml);
+          let mlvoorraad = voorraad * m.ml_per_verpakking;
+          let bestel_ml = Math.max(0, mlnodig-mlvoorraad);
+          let verpakkingen = bestel_ml>0 ? Math.ceil(bestel_ml/m.ml_per_verpakking) : 0;
+          html += `<div class="med-card">
+            <b>${m.naam}</b><br>
+            Benodigd: ${mlnodig.toFixed(1)} ml<br>
+            Huidige voorraad: ${mlvoorraad.toFixed(1)} ml (${voorraad} verpakkingen)<br>
+            Te bestellen: <b>${verpakkingen}</b> verpakking(en)
+          </div>`;
+          if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
+        } else if(m.vorm==="Pil") {
+          let dosering = m.dosering_per_kg * gewicht * dagen;
+          let pillen_nodig = dosering / m.mg_per_pil;
+          let voorraad_pillen = voorraad * m.pillen_per_verpakking;
+          let te_bestellen = Math.max(0, pillen_nodig-voorraad_pillen);
+          let verpakkingen = te_bestellen>0 ? Math.ceil(te_bestellen/m.pillen_per_verpakking) : 0;
+          html += `<div class="med-card">
+            <b>${m.naam}</b><br>
+            Benodigd: ${pillen_nodig.toFixed(1)} pillen<br>
+            Huidige voorraad: ${voorraad_pillen} pillen (${voorraad} verpakkingen)<br>
+            Te bestellen: <b>${verpakkingen}</b> verpakking(en)
+          </div>`;
+          if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
+        } else {
+          let ampullen_nodig = m.ampullen_per_dag * dagen;
+          let voorraad_ampullen = voorraad * m.ampullen_per_verpakking;
+          let te_bestellen = Math.max(0, ampullen_nodig-voorraad_ampullen);
+          let verpakkingen = te_bestellen>0 ? Math.ceil(te_bestellen/m.ampullen_per_verpakking) : 0;
+          html += `<div class="med-card">
+            <b>${m.naam}</b><br>
+            Benodigd: ${ampullen_nodig.toFixed(1)} ampullen/sachets<br>
+            Huidige voorraad: ${voorraad_ampullen} ampullen/sachets (${voorraad} verpakkingen)<br>
+            Te bestellen: <b>${verpakkingen}</b> verpakking(en)
+          </div>`;
+          if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
+        }
+      });
+      if(bestelregels.length>0) {
+        html += `<div class="bestellijst"><b>Bestellijst:</b><br>${bestelregels.join("<br>")}</div>`;
+      } else {
+        html += `<div class="info">Je hebt voldoende voorraad van alle medicijnen.</div>`;
+      }
+      document.getElementById("bestel-overzicht").innerHTML = html;
+    }
+    function mailBestellijst() {
+      let el = document.querySelector("#bestel-overzicht .bestellijst");
+      let body = el ? el.innerText.replace(/<br>/g,"%0A") : "Geen te bestellen medicatie.";
+      window.location = "mailto:?subject=Medicijnbestelling&body="+encodeURIComponent(body);
+    }
+
+    // ---- SERVICE WORKER ----
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
   </script>
 </body>
 </html>
