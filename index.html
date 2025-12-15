@@ -288,13 +288,15 @@
           <small>
             ${m.vorm==="Vloeistof" ? `
               Dosering: ${m.dosering_per_kg} ${m.eenheid}/kg/dag<br>
-              Conc.: ${m.concentratie_hoeveelheid} ${m.concentratie_eenheid} per ${m.concentratie_per_ml} ml
+              Conc.: ${m.concentratie_hoeveelheid} ${m.concentratie_eenheid} per ${m.concentratie_per_ml} ml<br>
+              Verpakking: ${m.ml_per_verpakking} ml
             ` : m.vorm==="Pil" ? `
               Dosering: ${m.dosering_per_kg} mg/kg/dag<br>
               mg per pil: ${m.mg_per_pil}, pillen/verpakking: ${m.pillen_per_verpakking}
             ` : `
               ${m.ampullen_per_dag} ampullen/sachets per dag, ${m.ampullen_per_verpakking} per verpakking
             `}
+            ${m.houdbaarheid_na_opening_dagen ? `<br>Houdbaarheid na opening: ${m.houdbaarheid_na_opening_dagen} dagen` : ""}
           </small>
         `;
         // Verwijder
@@ -327,6 +329,10 @@
           <option${vorm==="Ampul of Sachet"?" selected":""}>Ampul of Sachet</option>
         </select>
         <div id="vorm-fields"></div>
+
+        <label>Houdbaarheid na opening (dagen, optioneel)</label>
+        <input name="houdbaarheid" type="number" min="1" step="1" value="${m.houdbaarheid_na_opening_dagen||""}">
+
         <label>Foto van medicijn (optioneel)</label>
         <input type="file" accept="image/*" capture="environment" name="foto" id="foto-input">
         ${m.foto ? `<img id="foto-preview" class="foto-box" src="${m.foto}"><br>` : `<img id="foto-preview" class="foto-box" style="display:none"><br>` }
@@ -425,6 +431,7 @@
           medicijn.ampullen_per_dag = +f.ampullen_per_dag;
           medicijn.ampullen_per_verpakking = +f.ampullen_per_verpakking;
         }
+        if(f.houdbaarheid) medicijn.houdbaarheid_na_opening_dagen = parseInt(f.houdbaarheid);
         if(fotoData) medicijn.foto = fotoData;
         if(idx!=null) appState.medicaties[idx]=medicijn;
         else appState.medicaties.push(medicijn);
@@ -440,7 +447,7 @@
         let v = appState.voorraad[m.naam] || 0;
         html += `
           <div class="med-card flex">
-            <span style="flex:2">${m.naam}</span>
+            <span style="flex:2">${m.naam}${m.houdbaarheid_na_opening_dagen?` <small style="color:#555">(${m.houdbaarheid_na_opening_dagen}d houdb.)</small>`:""}</span>
             <input style="width:6em" type="number" min="0" step="1" value="${v}" data-mednaam="${m.naam}">
             <span>verpakkingen</span>
           </div>`;
@@ -604,12 +611,17 @@
       let bestelregels = [];
       appState.medicaties.forEach(m=>{
         let voorraad = appState.voorraad[m.naam]||0;
+
         if(m.vorm==="Vloeistof") {
-          let dosering = m.dosering_per_kg * gewicht * dagen;
+          let dosering = m.dosering_per_kg * gewicht * dagen; // totale mg of ml afhankelijk eenheid
+          // bereken totale ml nodig: dosering (mg) / (mg per ml) * ???.
+          // huidige implementatie volgt originele formule:
           let mlnodig = (dosering) / (m.concentratie_hoeveelheid / m.concentratie_per_ml);
-          let mlvoorraad = voorraad * m.ml_per_verpakking;
-          let bestel_ml = Math.max(0, mlnodig-mlvoorraad);
-          let verpakkingen = bestel_ml>0 ? Math.ceil(bestel_ml/m.ml_per_verpakking) : 0;
+          let mlvoorraad = voorraad * (m.ml_per_verpakking || 0);
+          let nodig_ml_extra = Math.max(0, mlnodig - mlvoorraad);
+          let verp_by_vol = (m.ml_per_verpakking && nodig_ml_extra>0) ? Math.ceil(nodig_ml_extra / m.ml_per_verpakking) : 0;
+          let verp_by_shelf = m.houdbaarheid_na_opening_dagen ? Math.ceil(dagen / m.houdbaarheid_na_opening_dagen) : 0;
+          let verpakkingen = Math.max(verp_by_vol, verp_by_shelf);
           html += `<div class="med-card">
             <b>${m.naam}</b><br>
             Benodigd: ${mlnodig.toFixed(1)} ml<br>
@@ -619,10 +631,12 @@
           if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
         } else if(m.vorm==="Pil") {
           let dosering = m.dosering_per_kg * gewicht * dagen;
-          let pillen_nodig = dosering / m.mg_per_pil;
-          let voorraad_pillen = voorraad * m.pillen_per_verpakking;
-          let te_bestellen = Math.max(0, pillen_nodig-voorraad_pillen);
-          let verpakkingen = te_bestellen>0 ? Math.ceil(te_bestellen/m.pillen_per_verpakking) : 0;
+          let pillen_nodig = m.mg_per_pil ? dosering / m.mg_per_pil : 0;
+          let voorraad_pillen = voorraad * (m.pillen_per_verpakking || 0);
+          let te_bestellen_pillen = Math.max(0, pillen_nodig - voorraad_pillen);
+          let verp_by_vol = (m.pillen_per_verpakking && te_bestellen_pillen>0) ? Math.ceil(te_bestellen_pillen / m.pillen_per_verpakking) : 0;
+          let verp_by_shelf = m.houdbaarheid_na_opening_dagen ? Math.ceil(dagen / m.houdbaarheid_na_opening_dagen) : 0;
+          let verpakkingen = Math.max(verp_by_vol, verp_by_shelf);
           html += `<div class="med-card">
             <b>${m.naam}</b><br>
             Benodigd: ${pillen_nodig.toFixed(1)} pillen<br>
@@ -631,10 +645,12 @@
           </div>`;
           if(verpakkingen>0) bestelregels.push(`${m.naam}: ${verpakkingen} verpakking(en)`);
         } else {
-          let ampullen_nodig = m.ampullen_per_dag * dagen;
-          let voorraad_ampullen = voorraad * m.ampullen_per_verpakking;
-          let te_bestellen = Math.max(0, ampullen_nodig-voorraad_ampullen);
-          let verpakkingen = te_bestellen>0 ? Math.ceil(te_bestellen/m.ampullen_per_verpakking) : 0;
+          let ampullen_nodig = (m.ampullen_per_dag || 0) * dagen;
+          let voorraad_ampullen = voorraad * (m.ampullen_per_verpakking || 0);
+          let te_bestellen_ampullen = Math.max(0, ampullen_nodig - voorraad_ampullen);
+          let verp_by_vol = (m.ampullen_per_verpakking && te_bestellen_ampullen>0) ? Math.ceil(te_bestellen_ampullen / m.ampullen_per_verpakking) : 0;
+          let verp_by_shelf = m.houdbaarheid_na_opening_dagen ? Math.ceil(dagen / m.houdbaarheid_na_opening_dagen) : 0;
+          let verpakkingen = Math.max(verp_by_vol, verp_by_shelf);
           html += `<div class="med-card">
             <b>${m.naam}</b><br>
             Benodigd: ${ampullen_nodig.toFixed(1)} ampullen/sachets<br>
