@@ -3,88 +3,160 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zorg Beheer - Metro Pro</title>
+  <title>Zorg Beheer Pro - Metro Edition</title>
   <style>
     :root {
       --metro-color: #0078d7;
       --bg-color: #000000;
+      --tile-text: #ffffff;
     }
-    body { font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif; background: var(--bg-color); color: white; margin: 0; padding: 20px; }
-    h1 { font-weight: 300; font-size: 2.5em; margin: 0 0 20px 0; }
-    h2 { font-weight: 300; border-bottom: 1px solid #333; padding-bottom: 10px; }
 
-    /* Metro Grid */
-    .metro-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-width: 900px; }
-    .tile { background: var(--metro-color); aspect-ratio: 1/1; padding: 15px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; transition: 0.1s; position: relative; overflow: hidden; border: 2px solid transparent; }
-    .tile:hover { transform: scale(0.97); border-color: rgba(255,255,255,0.4); }
-    .tile.wide { grid-column: span 2; aspect-ratio: 2/1; }
+    body { 
+      font-family: "Segoe UI", Tahoma, Helvetica, Sans-Serif; 
+      background: var(--bg-color); 
+      color: white; 
+      margin: 0; 
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    h1 { font-weight: 300; font-size: 2.5em; margin: 0 0 30px 0; }
+    h2 { font-weight: 300; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
+
+    /* Metro Grid Layout */
+    .metro-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Tiles */
+    .tile {
+      background: var(--metro-color);
+      aspect-ratio: 1 / 1;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      cursor: pointer;
+      transition: transform 0.1s;
+      border: 2px solid transparent;
+      box-sizing: border-box;
+    }
+    .tile:hover { transform: scale(0.98); border-color: rgba(255,255,255,0.5); }
+    .tile.wide { grid-column: span 2; aspect-ratio: 2 / 1; }
+    .tile-title { font-weight: 600; font-size: 1.1em; }
     .tile-icon { font-size: 2.5em; margin-bottom: auto; }
-    .tile-label { font-weight: 600; font-size: 1.1em; }
+    .highlight { outline: 4px solid #fff; z-index: 2001; position: relative; }
 
-    /* Pages */
-    .page { display: none; max-width: 800px; margin: 0 auto; }
-    .page.active { display: block; }
-    .back-btn { background: none; border: 1.5px solid white; color: white; padding: 8px 15px; cursor: pointer; margin-bottom: 20px; font-weight: bold; }
+    /* Pages & Forms */
+    .content-page { display: none; max-width: 800px; margin: 0 auto; animation: fadeIn 0.3s; }
+    .content-page.active { display: block; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .back-btn { background: none; border: 1.5px solid white; color: white; padding: 8px 15px; margin-bottom: 20px; cursor: pointer; font-weight: bold; }
     .back-btn:hover { background: white; color: black; }
 
-    /* Forms */
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: 600; color: #bbb; font-size: 0.9em; }
-    input, select { background: #1a1a1a; border: 2px solid #333; color: white; padding: 12px; width: 100%; box-sizing: border-box; font-size: 1em; }
+    .form-group { margin-bottom: 20px; }
+    label { font-weight: 600; margin-bottom: 8px; color: #bbb; display: block; font-size: 0.9em; }
+    input, select, textarea { 
+      background: #1a1a1a; border: 2px solid #333; color: white; 
+      padding: 12px; width: 100%; box-sizing: border-box; font-size: 1em;
+    }
     input:focus { border-color: var(--metro-color); outline: none; }
-    .help-link { color: var(--metro-color); font-size: 0.85em; text-decoration: none; margin-top: 5px; display: inline-block; }
-    .help-link:hover { text-decoration: underline; }
 
     .btn-main { background: var(--metro-color); color: white; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; font-size: 1em; }
-    .calc-box { background: #222; padding: 15px; border-left: 4px solid var(--metro-color); margin: 10px 0; }
+    .calc-box { background: #111; padding: 15px; border-left: 4px solid var(--metro-color); margin: 10px 0; }
+    .help-link { color: var(--metro-color); font-size: 0.85em; text-decoration: none; margin-right: 10px; }
+    .help-link:hover { text-decoration: underline; }
 
-    /* Items list */
-    .item-card { background: #111; padding: 15px; margin-bottom: 10px; border: 1px solid #222; position: relative; }
-    .item-card:hover { border-color: var(--metro-color); }
-    .badge { position: absolute; top: 15px; right: 15px; background: #333; padding: 3px 8px; font-size: 0.7em; text-transform: uppercase; }
+    /* Guidance Overlay */
+    #guidance-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .guide-card {
+      background: var(--metro-color); color: white; padding: 30px;
+      max-width: 400px; border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 0 50px rgba(0,0,0,1);
+    }
+    .guide-card h3 { margin-top: 0; font-size: 1.5em; font-weight: 300; }
+    .guide-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
 
-    #login-screen { position: fixed; inset: 0; background: black; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+    /* Login Stub */
+    #login-screen {
+      position: fixed; inset: 0; background: #000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000;
+    }
+
+    .item-card { background: #111; padding: 15px; margin-bottom: 10px; border-left: 5px solid var(--metro-color); position: relative; }
   </style>
 </head>
 <body>
 
   <div id="login-screen">
     <h1>Zorg Beheer</h1>
-    <button class="btn-main" onclick="login()" style="width: 250px;">Inloggen (Cloud)</button>
-    <p style="color: #666; font-size: 0.8em; margin-top: 20px;">AES-256 Encrypted Cloud Storage</p>
+    <p>Beveiligde toegang vereist</p>
+    <button class="btn-main" style="width: 280px; margin: 5px;" onclick="handleLogin('Google')">Inloggen met Google</button>
+    <button class="btn-main" style="width: 280px; margin: 5px; background: #2f2f2f;" onclick="handleLogin('Microsoft')">Inloggen met Microsoft</button>
+    <button class="btn-main" style="width: 280px; margin: 5px; background: #333; border: 1px solid #fff;" onclick="handleLogin('Apple')">Inloggen met Apple</button>
   </div>
 
-  <div id="p-dashboard" class="page">
-    <h1>Dashboard</h1>
-    <div class="metro-grid">
-      <div class="tile wide" onclick="nav('items')"><div class="tile-icon">📦</div><div class="tile-label">Voorraad & Artikelen</div></div>
-      <div class="tile" onclick="nav('bestellen')"><div class="tile-icon">🛒</div><div class="tile-label">Bestellen</div></div>
-      <div class="tile" onclick="nav('instellingen')"><div class="tile-icon">⚙️</div><div class="tile-label">Instellingen</div></div>
+  <div id="guidance-overlay">
+    <div class="guide-card">
+      <h3 id="guide-title">Welkom</h3>
+      <p id="guide-text"></p>
+      <div class="guide-nav">
+        <span id="guide-step" style="font-size: 0.8em; opacity: 0.8;"></span>
+        <button class="back-btn" style="margin:0; padding: 5px 15px;" onclick="nextGuideStep()">VOLGENDE</button>
+      </div>
     </div>
   </div>
 
-  <div id="p-items" class="page">
-    <button class="back-btn" onclick="nav('dashboard')">⬅ DASHBOARD</button>
-    <h2>Artikelen</h2>
+  <div id="p-dashboard" class="content-page">
+    <h1>Dashboard</h1>
+    <div class="metro-container">
+      <div id="tile-items" class="tile wide" onclick="openPage('items')">
+        <div class="tile-icon">📦</div>
+        <div class="tile-title">Artikelen & Voorraad</div>
+      </div>
+      <div class="tile" onclick="openPage('bestellen')">
+        <div class="tile-icon">🛒</div>
+        <div class="tile-title">Bestellen</div>
+      </div>
+      <div id="tile-settings" class="tile" onclick="openPage('instellingen')">
+        <div class="tile-icon">⚙️</div>
+        <div class="tile-title">Instellingen</div>
+      </div>
+      <div class="tile" onclick="logout()">
+        <div class="tile-icon">⬅️</div>
+        <div class="tile-title">Uitloggen</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="p-items" class="content-page">
+    <button class="back-btn" onclick="openPage('dashboard')">⬅ DASHBOARD</button>
+    <h2>Voorraadbeheer</h2>
     <button class="btn-main" style="margin-bottom: 20px;" onclick="showItemForm()">+ NIEUW ARTIKEL</button>
     <div id="items-list"></div>
   </div>
 
-  <div id="p-item-form" class="page">
-    <button class="back-btn" onclick="nav('items')">⬅ ANNULEREN</button>
-    <h2 id="form-header">Artikel Details</h2>
+  <div id="p-item-form" class="content-page">
+    <button class="back-btn" onclick="openPage('items')">⬅ ANNULEREN</button>
+    <h2>Artikel Details</h2>
     <form id="item-form">
-      <input type="hidden" id="f-id">
-      
       <div class="form-group">
-        <label>Type Artikel</label>
+        <label>Type</label>
         <select id="f-type" onchange="toggleMedFields()">
-          <option value="Hulpmiddel">Medisch Hulpmiddel (Sonde, Spuiten, etc.)</option>
-          <option value="Medicatie">Medicatie (Vloeistof/Pillen)</option>
+          <option value="Hulpmiddel">Medisch Hulpmiddel (Spuiten, luiers, etc.)</option>
+          <option value="Medicatie">Medicatie</option>
           <option value="Voeding">Voeding</option>
         </select>
       </div>
-
       <div class="form-group">
         <label>Naam Artikel</label>
         <input id="f-naam" required placeholder="Bijv. Paracetamol vloeibaar">
@@ -92,177 +164,196 @@
 
       <div id="med-fields" style="display:none;">
         <div class="calc-box">
-          <label>Doseringshulp</label>
-          <a href="https://www.kinderformularium.nl" target="_blank" class="help-link">Open Kinderformularium.nl ↗</a> | 
-          <a href="https://www.farmacotherapeutischkompas.nl" target="_blank" class="help-link">Open Farmacotherapeutisch Kompas ↗</a>
-          
+          <label>Doseringshulp (mg/kg)</label>
+          <a href="https://www.kinderformularium.nl" target="_blank" class="help-link">Kinderformularium ↗</a>
+          <a href="https://www.farmacotherapeutischkompas.nl" target="_blank" class="help-link">FK (Volwassenen) ↗</a>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-            <div>
-              <label>Dosis (mg / kg / dag)</label>
-              <input type="number" id="f-mg-per-kg" step="0.01" oninput="calculateDaily()">
-            </div>
-            <div>
-              <label>Concentratie (mg / ml of mg / pil)</label>
-              <input type="number" id="f-concentratie" step="0.01" oninput="calculateDaily()">
-            </div>
+            <input type="number" id="f-mg-per-kg" step="0.01" placeholder="Dosis mg/kg" oninput="calculateDaily()">
+            <input type="number" id="f-concentratie" step="0.01" placeholder="Conc. mg/ml of mg/pil" oninput="calculateDaily()">
           </div>
         </div>
       </div>
 
       <div class="form-group">
-        <label>Totaal verbruik per dag (<span id="unit-label">stuks/ml</span>)</label>
-        <input type="number" id="f-verbruik" step="0.01" required>
+        <label>Dagelijks verbruik (stuks/ml/pillen)</label>
+        <input id="f-verbruik" type="number" step="0.01" required>
         <small id="calc-info" style="color: var(--metro-color)"></small>
       </div>
 
       <div class="form-group">
-        <label>Leverancier (Typ om nieuwe toe te voegen)</label>
-        <input id="f-leverancier" list="lev-list">
+        <label>Leverancier (Typ voor nieuwe)</label>
+        <input id="f-leverancier" list="lev-list" placeholder="Zoek of voeg toe...">
         <datalist id="lev-list"></datalist>
+      </div>
+      
+      <div class="form-group">
+        <label>Contact/Mail (Alleen bij nieuwe leverancier)</label>
+        <input id="f-contact" placeholder="bestelling@apotheek.nl">
       </div>
 
       <button type="submit" class="btn-main">OPSLAAN</button>
     </form>
   </div>
 
-  <div id="p-instellingen" class="page">
-    <button class="back-btn" onclick="nav('dashboard')">⬅ DASHBOARD</button>
-    <h2>Patiënt & App</h2>
+  <div id="p-instellingen" class="content-page">
+    <button class="back-btn" onclick="openPage('dashboard')">⬅ DASHBOARD</button>
+    <h2>Instellingen</h2>
     <div class="form-group">
       <label>Lichaamsgewicht Patiënt (kg)</label>
       <input type="number" id="set-gewicht" step="0.1" onchange="updateWeight()">
-      <p style="font-size: 0.8em; color: #888;">Wijziging hererekent direct alle medicatie-hoeveelheden.</p>
     </div>
     <div class="form-group">
       <label>Accent Kleur</label>
-      <input type="color" id="set-color" onchange="updateColor(this.value)" style="height: 50px; padding: 5px;">
+      <input type="color" id="set-color" onchange="updateColor(this.value)" style="height: 50px; padding: 5px; cursor: pointer;">
     </div>
   </div>
 
   <script>
-    // --- STATE MANAGEMENT ---
+    // --- STATE ---
     let state = {
       items: JSON.parse(localStorage.getItem('z_items') || '[]'),
       leveranciers: JSON.parse(localStorage.getItem('z_levs') || '[]'),
       gewicht: parseFloat(localStorage.getItem('z_weight') || '0'),
-      color: localStorage.getItem('z_color') || '#0078d7'
+      theme: localStorage.getItem('z_theme') || '#0078d7',
+      guideDone: localStorage.getItem('z_guide') === 'true'
     };
 
-    function login() {
-      document.getElementById('login-screen').style.display = 'none';
-      nav('dashboard');
-    }
-
-    function nav(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById('p-' + pageId).classList.add('active');
-      if(pageId === 'items') renderItems();
-      if(pageId === 'instellingen') {
+    // --- NAVIGATION ---
+    function openPage(id) {
+      document.querySelectorAll('.content-page').forEach(p => p.classList.remove('active'));
+      const p = document.getElementById('p-' + id);
+      if(p) p.classList.add('active');
+      if(id === 'items') renderItems();
+      if(id === 'instellingen') {
         document.getElementById('set-gewicht').value = state.gewicht;
-        document.getElementById('set-color').value = state.color;
+        document.getElementById('set-color').value = state.theme;
       }
     }
 
-    // --- DOSERING LOGICA ---
+    function handleLogin(provider) {
+      document.getElementById('login-screen').style.display = 'none';
+      openPage('dashboard');
+      if(!state.guideDone) startGuidance();
+    }
+
+    function logout() { location.reload(); }
+
+    // --- DOSERING & GEWICHT ---
     function toggleMedFields() {
-      const isMed = document.getElementById('f-type').value === 'Medicatie';
-      document.getElementById('med-fields').style.display = isMed ? 'block' : 'none';
-      document.getElementById('unit-label').innerText = isMed ? 'ml of pillen' : 'stuks/eenheden';
+      document.getElementById('med-fields').style.display = document.getElementById('f-type').value === 'Medicatie' ? 'block' : 'none';
     }
 
     function calculateDaily() {
       const mgKg = parseFloat(document.getElementById('f-mg-per-kg').value);
       const conc = parseFloat(document.getElementById('f-concentratie').value);
-      
       if(mgKg && conc && state.gewicht > 0) {
-        const dagelijkseDosisMg = mgKg * state.gewicht;
-        const dagelijkseHoeveelheid = dagelijkseDosisMg / conc;
-        document.getElementById('f-verbruik').value = dagelijkseHoeveelheid.toFixed(2);
-        document.getElementById('calc-info').innerText = `Berekend: ${dagelijkseDosisMg.toFixed(1)} mg per dag`;
+        const result = (mgKg * state.gewicht) / conc;
+        document.getElementById('f-verbruik').value = result.toFixed(2);
+        document.getElementById('calc-info').innerText = `Berekend op basis van ${state.gewicht}kg`;
       }
     }
 
     function updateWeight() {
       state.gewicht = parseFloat(document.getElementById('set-gewicht').value);
       localStorage.setItem('z_weight', state.gewicht);
-      
-      // Herbereken alle medicatie items
-      state.items = state.items.map(item => {
-        if(item.type === 'Medicatie' && item.mgPerKg && item.concentratie) {
-          item.verbruik = (item.mgPerKg * state.gewicht) / item.concentratie;
+      // Recalculate all meds
+      state.items = state.items.map(i => {
+        if(i.type === 'Medicatie' && i.mgKg && i.conc) {
+          i.verbruik = (i.mgKg * state.gewicht) / i.conc;
         }
-        return item;
+        return i;
       });
       saveAndSync();
     }
 
-    // --- CRUD OPERATIES ---
+    // --- GUIDANCE SYSTEM ---
+    let currentStep = 0;
+    const guideSteps = [
+      { t: "Stap 1: Gewicht", text: "Stel eerst het gewicht in onder Instellingen. Dit is cruciaal voor medicatie-berekeningen.", el: "tile-settings" },
+      { t: "Stap 2: Medicatie", text: "Voeg medicijnen toe met mg/kg. De app rekent de ml/pillen voor je uit.", el: "tile-items" },
+      { t: "Stap 3: Hulpmiddelen", text: "Voor spuiten of luiers vul je simpelweg het dagelijks aantal in.", el: "tile-items" },
+      { t: "Stap 4: Groei", text: "Patiënt gegroeid? Pas alleen het gewicht aan en alle doseringen verspringen mee!", el: "tile-settings" }
+    ];
+
+    function startGuidance() {
+      document.getElementById('guidance-overlay').style.display = 'flex';
+      showGuideStep();
+    }
+
+    function showGuideStep() {
+      const s = guideSteps[currentStep];
+      document.getElementById('guide-title').innerText = s.t;
+      document.getElementById('guide-text').innerText = s.text;
+      document.getElementById('guide-step').innerText = `Stap ${currentStep + 1} van 4`;
+      document.querySelectorAll('.tile').forEach(t => t.classList.remove('highlight'));
+      document.getElementById(s.el).classList.add('highlight');
+    }
+
+    function nextGuideStep() {
+      currentStep++;
+      if(currentStep < guideSteps.length) showGuideStep();
+      else {
+        document.getElementById('guidance-overlay').style.display = 'none';
+        document.querySelectorAll('.tile').forEach(t => t.classList.remove('highlight'));
+        localStorage.setItem('z_guide', 'true');
+      }
+    }
+
+    // --- CORE FUNCTIONS ---
     function showItemForm() {
       document.getElementById('item-form').reset();
-      document.getElementById('f-id').value = '';
-      toggleMedFields();
       updateLevList();
-      nav('item-form');
+      openPage('item-form');
     }
 
     document.getElementById('item-form').onsubmit = (e) => {
       e.preventDefault();
       const levNaam = document.getElementById('f-leverancier').value;
-      if(levNaam && !state.leveranciers.includes(levNaam)) {
-        state.leveranciers.push(levNaam);
+      if(levNaam && !state.leveranciers.find(l => l.naam === levNaam)) {
+        state.leveranciers.push({ naam: levNaam, contact: document.getElementById('f-contact').value });
       }
-
-      const id = document.getElementById('f-id').value || Date.now().toString();
       const item = {
-        id,
+        id: Date.now(),
         type: document.getElementById('f-type').value,
         naam: document.getElementById('f-naam').value,
-        mgPerKg: parseFloat(document.getElementById('f-mg-per-kg').value),
-        concentratie: parseFloat(document.getElementById('f-concentratie').value),
+        mgKg: parseFloat(document.getElementById('f-mg-per-kg').value),
+        conc: parseFloat(document.getElementById('f-concentratie').value),
         verbruik: parseFloat(document.getElementById('f-verbruik').value),
         leverancier: levNaam
       };
-
-      const idx = state.items.findIndex(i => i.id === id);
-      if(idx > -1) state.items[idx] = item; else state.items.push(item);
-      
+      state.items.push(item);
       saveAndSync();
-      nav('items');
+      openPage('items');
     };
 
     function renderItems() {
-      const container = document.getElementById('items-list');
-      container.innerHTML = state.items.map(i => `
+      const list = document.getElementById('items-list');
+      list.innerHTML = state.items.map(i => `
         <div class="item-card">
-          <span class="badge">${i.type}</span>
-          <div style="font-weight: bold; font-size: 1.2em;">${i.naam}</div>
-          <div style="color: var(--metro-color); margin: 5px 0;">
-            Dagelijks verbruik: <b>${i.verbruik.toFixed(2)}</b> ${i.type === 'Medicatie' ? 'ml/pillen' : 'stuks'}
-          </div>
-          <div style="font-size: 0.8em; color: #777;">Leverancier: ${i.leverancier || 'Geen'}</div>
+          <div style="font-weight:bold">${i.naam}</div>
+          <div style="font-size:0.9em; color:var(--metro-color)">Verbruik: ${i.verbruik.toFixed(2)} p/d</div>
+          <div style="font-size:0.8em; color:#777">Via: ${i.leverancier || 'Onbekend'}</div>
         </div>
-      `).join('') || '<p>Geen items gevonden.</p>';
+      `).join('') || '<p>Nog geen artikelen.</p>';
     }
 
     function updateLevList() {
-      const dl = document.getElementById('lev-list');
-      dl.innerHTML = state.leveranciers.map(l => `<option value="${l}">`).join('');
+      document.getElementById('lev-list').innerHTML = state.leveranciers.map(l => `<option value="${l.naam}">`).join('');
     }
 
     function updateColor(c) {
-      state.color = c;
+      state.theme = c;
       document.documentElement.style.setProperty('--metro-color', c);
-      localStorage.setItem('z_color', c);
+      localStorage.setItem('z_theme', c);
     }
 
     function saveAndSync() {
       localStorage.setItem('z_items', JSON.stringify(state.items));
       localStorage.setItem('z_levs', JSON.stringify(state.leveranciers));
-      // Hier zou de push naar de encrypted server komen
     }
 
-    // Init color
-    updateColor(state.color);
+    // Init Theme
+    updateColor(state.theme);
   </script>
 </body>
 </html>
