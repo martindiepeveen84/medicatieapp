@@ -3,182 +3,197 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zorg Beheer Pro - Zero-Knowledge</title>
+  <title>Zorg Beheer - Liquid Glass Edition</title>
   <style>
     :root {
-      --metro-color: #0078d7;
-      --bg-color: #000000;
-      --tile-text: #ffffff;
+      --accent: #6366f1;
+      --bg: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);
+      --glass: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.4);
+      --text: #1f2937;
     }
 
     body { 
-      font-family: "Segoe UI", Tahoma, sans-serif; 
-      background: var(--bg-color); 
-      color: white; 
+      font-family: "Segoe UI", system-ui, sans-serif; 
+      background: var(--bg); 
+      background-attachment: fixed;
+      color: var(--text); 
       margin: 0; 
       padding: 20px;
-      overflow-x: hidden;
+      min-height: 100vh;
     }
 
-    h1 { font-weight: 300; font-size: 2.5em; margin: 0 0 30px 0; }
-    h2 { font-weight: 300; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
-
-    /* Metro Grid Layout */
-    .metro-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
-      max-width: 1000px;
-      margin: 0 auto;
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 25px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
     }
 
-    /* Tiles */
-    .tile {
-      background: var(--metro-color);
-      aspect-ratio: 1 / 1;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      cursor: pointer;
-      transition: transform 0.1s;
-      border: 2px solid transparent;
-      box-sizing: border-box;
+    h1, h2 { font-weight: 300; margin-top: 0; color: var(--accent); }
+
+    .nav-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; scrollbar-width: none; }
+    .nav-btn { 
+      background: var(--glass); border: 1px solid var(--glass-border); padding: 12px 24px; 
+      border-radius: 30px; cursor: pointer; white-space: nowrap; font-weight: 600; color: var(--text);
+      transition: all 0.2s;
     }
-    .tile:hover { transform: scale(0.98); border-color: rgba(255,255,255,0.5); }
-    .tile.wide { grid-column: span 2; aspect-ratio: 2 / 1; }
-    .tile-title { font-weight: 600; font-size: 1.1em; }
-    .tile-icon { font-size: 2.5em; margin-bottom: auto; }
-    .highlight { outline: 4px solid #fff; z-index: 2001; position: relative; }
+    .nav-btn.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
 
-    /* Pages */
-    .content-page { display: none; max-width: 800px; margin: 0 auto; animation: fadeIn 0.3s; }
-    .content-page.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    .back-btn { background: none; border: 1.5px solid white; color: white; padding: 8px 15px; margin-bottom: 20px; cursor: pointer; font-weight: bold; }
-    .back-btn:hover { background: white; color: black; }
-
-    /* Forms */
-    .form-group { margin-bottom: 20px; }
-    label { font-weight: 600; margin-bottom: 8px; color: #bbb; display: block; font-size: 0.9em; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 0.85em; font-weight: 600; margin-bottom: 5px; opacity: 0.8; }
     input, select { 
-      background: #1a1a1a; border: 2px solid #333; color: white; 
-      padding: 12px; width: 100%; box-sizing: border-box; font-size: 1em;
+      width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.5); font-size: 1em; box-sizing: border-box;
     }
-    input:focus { border-color: var(--metro-color); outline: none; }
+    input:focus { outline: none; border-color: var(--accent); background: #fff; }
 
-    .btn-main { background: var(--metro-color); color: white; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; font-size: 1em; }
-    .calc-box { background: #111; padding: 15px; border-left: 4px solid var(--metro-color); margin: 10px 0; }
-
-    /* Guidance Overlay */
-    #guidance-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-      z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px;
+    .btn-action { 
+      background: var(--accent); color: white; border: none; padding: 16px; 
+      border-radius: 16px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1em;
+      transition: transform 0.1s;
     }
-    .guide-card { background: var(--metro-color); color: white; padding: 30px; max-width: 400px; border: 1px solid rgba(255,255,255,0.3); }
-    .guide-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+    .btn-action:active { transform: scale(0.98); }
 
-    /* Login Screen */
+    .item-row { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding: 15px 0; }
+    .foto-circle { width: 60px; height: 60px; border-radius: 18px; object-fit: cover; background: #eee; border: 1px solid var(--glass-border); }
+
     #login-screen {
-      position: fixed; inset: 0; background: #000;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000;
+      position: fixed; inset: 0; background: var(--bg); z-index: 3000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-    .security-tag { font-size: 0.75em; color: #00ff00; margin-top: 15px; letter-spacing: 1px; }
-    .item-card { background: #111; padding: 15px; margin-bottom: 10px; border-left: 5px solid var(--metro-color); }
+
+    .bestel-block { border-left: 4px solid var(--accent); padding-left: 15px; margin-bottom: 25px; }
+    .page { display: none; max-width: 800px; margin: 0 auto; animation: fadeIn 0.4s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
   <div id="login-screen">
-    <h1>Zorg Beheer</h1>
-    <p>Beveiligde toegang</p>
-    <button class="btn-main" id="login-google" style="width: 280px; padding: 18px;">
-      INLOGGEN MET GOOGLE
-    </button>
-    <span class="security-tag">● END-TO-END ENCRYPTED (AES-256)</span>
-  </div>
-
-  <div id="guidance-overlay">
-    <div class="guide-card">
-      <h3 id="guide-title">Welkom</h3>
-      <p id="guide-text"></p>
-      <div class="guide-nav">
-        <span id="guide-step" style="font-size: 0.8em; opacity: 0.8;"></span>
-        <button class="back-btn" id="guide-next-btn" style="margin:0; padding: 5px 15px;">VOLGENDE</button>
-      </div>
+    <div class="glass-card" style="text-align: center; width: 320px;">
+      <h1>Zorg Beheer</h1>
+      <p style="margin-bottom: 25px; opacity: 0.7;">Beveiligde toegang</p>
+      <button class="btn-action" id="btn-login-google">INLOGGEN MET GOOGLE</button>
+      <p style="font-size: 0.7em; margin-top: 25px; opacity: 0.5; letter-spacing: 0.5px;">ZERO-KNOWLEDGE ENCRYPTED</p>
     </div>
   </div>
 
-  <div id="p-dashboard" class="content-page">
-    <h1>Dashboard</h1>
-    <div class="metro-container">
-      <div id="tile-items" class="tile wide" onclick="window.nav('items')">
-        <div class="tile-icon">📦</div>
-        <div class="tile-title">Artikelen & Voorraad</div>
-      </div>
-      <div id="tile-bestellen" class="tile" onclick="window.nav('bestellen')">
-        <div class="tile-icon">🛒</div>
-        <div class="tile-title">Bestellen</div>
-      </div>
-      <div id="tile-settings" class="tile" onclick="window.nav('instellingen')">
-        <div class="tile-icon">⚙️</div>
-        <div class="tile-title">Instellingen</div>
-      </div>
-      <div class="tile" onclick="window.logout()">
-        <div class="tile-icon">⬅️</div>
-        <div class="tile-title">Uitloggen</div>
+  <div id="main-app" style="display:none;">
+    <div class="nav-bar">
+      <button class="nav-btn active" onclick="nav('items')">📦 Voorraad</button>
+      <button class="nav-btn" onclick="nav('bestellen')">🛒 Bestellen</button>
+      <button class="nav-btn" onclick="nav('leveranciers')">🏢 Leveranciers</button>
+      <button class="nav-btn" onclick="nav('instellingen')">⚙️ Instellingen</button>
+    </div>
+
+    <div id="p-items" class="page active">
+      <button class="btn-action" onclick="showItemForm()" style="margin-bottom:25px;">+ NIEUW ARTIKEL</button>
+      <div id="items-list" class="glass-card"></div>
+    </div>
+
+    <div id="p-bestellen" class="page">
+      <div class="glass-card">
+        <h2>Besteladvies</h2>
+        <div id="bestel-overzicht"></div>
       </div>
     </div>
-  </div>
 
-  <div id="p-items" class="content-page">
-    <button class="back-btn" onclick="window.nav('dashboard')">⬅ DASHBOARD</button>
-    <h2>Voorraadbeheer</h2>
-    <button class="btn-main" style="margin-bottom: 20px;" onclick="window.showItemForm()">+ NIEUW ARTIKEL</button>
-    <div id="items-list"></div>
-  </div>
+    <div id="p-leveranciers" class="page">
+      <div class="glass-card">
+        <h2>Leveranciers</h2>
+        <div id="leveranciers-lijst"></div>
+      </div>
+    </div>
 
-  <div id="p-item-form" class="content-page">
-    <button class="back-btn" onclick="window.nav('items')">⬅ ANNULEREN</button>
-    <h2>Artikel Details</h2>
-    <form id="item-form">
-      <div class="form-group">
-        <label>Type</label>
-        <select id="f-type">
-          <option value="Hulpmiddel">Medisch Hulpmiddel</option>
-          <option value="Medicatie">Medicatie</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Naam Artikel</label>
-        <input id="f-naam" required>
-      </div>
-      <div id="med-fields" style="display:none;" class="calc-box">
-        <label>Doseringshulp (mg/kg)</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <input type="number" id="f-mg-per-kg" step="0.01" placeholder="Dosis mg/kg">
-          <input type="number" id="f-concentratie" step="0.01" placeholder="Conc. mg/ml">
+    <div id="p-instellingen" class="page">
+      <div class="glass-card">
+        <h2>Instellingen</h2>
+        <div class="form-group">
+          <label>Gewicht patiënt (kg)</label>
+          <input id="set-gewicht" placeholder="bijv. 12,5">
         </div>
+        <div class="form-group">
+          <label>Bestelperiode (dagen)</label>
+          <input id="set-besteldagen" type="number" value="14">
+        </div>
+        <button class="btn-action" onclick="saveSettings()">OPSLAAN</button>
+        <button class="btn-action" style="background: #f87171; margin-top: 15px;" onclick="window.logout()">UITLOGGEN</button>
       </div>
-      <div class="form-group">
-        <label>Dagelijks verbruik</label>
-        <input id="f-verbruik" type="number" step="0.01" required>
-      </div>
-      <button type="submit" class="btn-main">BEVEILIGD OPSLAAN</button>
-    </form>
-  </div>
-
-  <div id="p-instellingen" class="content-page">
-    <button class="back-btn" onclick="window.nav('dashboard')">⬅ DASHBOARD</button>
-    <h2>Instellingen</h2>
-    <div class="form-group">
-      <label>Gewicht Patiënt (kg)</label>
-      <input type="number" id="set-gewicht" step="0.1">
     </div>
-    <div class="form-group">
-      <label>Accent Kleur</label>
-      <input type="color" id="set-color">
+
+    <div id="p-form" class="page">
+      <div class="glass-card">
+        <h2 id="form-title">Artikel toevoegen</h2>
+        <form id="item-form">
+          <div class="form-group">
+            <label>Naam Artikel</label>
+            <input id="f-naam" required>
+          </div>
+          <div class="form-group">
+            <label>Vorm</label>
+            <select id="f-vorm">
+              <option value="Vloeistof">Vloeistof</option>
+              <option value="Pil">Pil</option>
+              <option value="Ampul">Ampul</option>
+              <option value="Sachet">Sachet</option>
+            </select>
+          </div>
+
+          <div class="calc-box glass-card" style="background: rgba(255,255,255,0.2); margin-bottom: 20px;">
+            <label>Automatische dosering (optioneel)</label>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+              <input id="f-mgkg" placeholder="Dosis mg/kg">
+              <input id="f-conc" placeholder="Conc. mg/ml">
+            </div>
+            <select id="f-conc-unit" style="margin-top:10px;">
+              <option value="mg">Eenheid: milligram (mg)</option>
+              <option value="mcg">Eenheid: microgram (mcg)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Totaal verbruik per dag (stuks/ml)</label>
+            <input id="f-verbruik" required placeholder="bijv. 5,0">
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label>Huidige voorraad (verp.)</label>
+              <input id="f-voorraad" type="number" value="0">
+            </div>
+            <div class="form-group">
+              <label>Inhoud per verp. (stuks/ml)</label>
+              <input id="f-inhoud-verp" placeholder="bijv. 100">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Leverancier</label>
+            <input id="f-lev" list="lev-datalist" placeholder="Naam leverancier">
+            <datalist id="lev-datalist"></datalist>
+          </div>
+
+          <div class="form-group">
+            <label>Houdbaarheid na openen (dagen)</label>
+            <input id="f-houdb" type="number" placeholder="Optioneel">
+          </div>
+
+          <div class="form-group">
+            <label>Foto</label>
+            <input type="file" accept="image/*" capture="environment" id="f-foto-input">
+            <img id="f-foto-preview" class="foto-circle" style="display:none; margin-top:15px; width:100px; height:100px;">
+          </div>
+
+          <button type="submit" class="btn-action">BEVEILIGD OPSLAAN</button>
+          <button type="button" class="btn-action" style="background:#94a3b8; margin-top:10px;" onclick="nav('items')">ANNULEREN</button>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -187,14 +202,14 @@
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- CONFIG ---
+    // --- JOUW FIREBASE CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyAyiQ1NRg_JBuzXEDtmm-HMtdKFl_dP-mk",
       authDomain: "medicatieapp-b7eff.firebaseapp.com",
       projectId: "medicatieapp-b7eff",
       storageBucket: "medicatieapp-b7eff.firebasestorage.app",
       messagingSenderId: "420945260736",
-      appId: "1:420945260736:web:f05ded99fb85b64b97fd25",
+      appId: "1:420945260736:web:f05ded99fb85b64b97fd25"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -202,146 +217,167 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    let state = { items: [], gewicht: 0, theme: '#0078d7', guideDone: false };
+    let state = { items: [], leveranciers: [], gewicht: 0, besteldagen: 14 };
     let encryptionKey = null;
+
+    const parseNL = (v) => v ? parseFloat(v.toString().replace(',', '.')) : 0;
+    const formatNL = (v) => v ? v.toString().replace('.', ',') : "0";
 
     // --- CRYPTO ---
     async function deriveKey(uid) {
-      const encoder = new TextEncoder();
-      const baseKey = await crypto.subtle.importKey("raw", encoder.encode(uid), "PBKDF2", false, ["deriveKey"]);
+      const enc = new TextEncoder();
+      const base = await crypto.subtle.importKey("raw", enc.encode(uid), "PBKDF2", false, ["deriveKey"]);
       return crypto.subtle.deriveKey(
-        { name: "PBKDF2", salt: encoder.encode("zorg-v1-salt"), iterations: 100000, hash: "SHA-256" },
-        baseKey, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
+        { name: "PBKDF2", salt: enc.encode("zorg-v3-salt"), iterations: 100000, hash: "SHA-256" },
+        base, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
       );
     }
 
     async function encrypt(data) {
       const iv = crypto.getRandomValues(new Uint8Array(12));
       const encoded = new TextEncoder().encode(JSON.stringify(data));
-      const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, encryptionKey, encoded);
-      return { iv: Array.from(iv), data: Array.from(new Uint8Array(ciphertext)) };
+      const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, encryptionKey, encoded);
+      return { iv: Array.from(iv), data: Array.from(new Uint8Array(cipher)) };
     }
 
-    async function decrypt(encObj) {
+    async function decrypt(obj) {
       try {
-        const decrypted = await crypto.subtle.decrypt(
-          { name: "AES-GCM", iv: new Uint8Array(encObj.iv) },
-          encryptionKey, new Uint8Array(encObj.data)
-        );
-        return JSON.parse(new TextDecoder().decode(decrypted));
-      } catch (e) { return null; }
+        const dec = await crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(obj.iv) }, encryptionKey, new Uint8Array(obj.data));
+        return JSON.parse(new TextDecoder().decode(dec));
+      } catch(e) { return null; }
     }
 
-    // --- AUTH EVENTS ---
-    document.getElementById('login-google').onclick = async () => {
-      try { await signInWithPopup(auth, provider); } catch (e) { console.error("Login Error", e); }
-    };
-
-    window.logout = () => signOut(auth);
-
+    // --- AUTH ---
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         encryptionKey = await deriveKey(user.uid);
         document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
         await loadData(user.uid);
-        window.nav('dashboard');
-        if(!state.guideDone) startGuidance();
+        nav('items');
       } else {
         document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('main-app').style.display = 'none';
       }
     });
 
-    // --- DATA SYNC ---
+    async function sync() {
+      if (!auth.currentUser) return;
+      const vault = await encrypt(state);
+      await setDoc(doc(db, "users", auth.currentUser.uid), { vault, ts: Date.now() });
+    }
+
     async function loadData(uid) {
       const snap = await getDoc(doc(db, "users", uid));
-      if (snap.exists()) {
-        const cloud = snap.data();
-        if (cloud.vault) {
-          const dec = await decrypt(cloud.vault);
-          if (dec) state = { ...state, ...dec, theme: cloud.theme, guideDone: cloud.guideDone };
-        }
-        updateUI();
+      if (snap.exists() && snap.data().vault) {
+        const dec = await decrypt(snap.data().vault);
+        if (dec) state = dec;
       }
+      updateGlobalUI();
     }
 
-    async function sync() {
-      if (auth.currentUser && encryptionKey) {
-        const vault = await encrypt({ items: state.items, gewicht: state.gewicht });
-        await setDoc(doc(db, "users", auth.currentUser.uid), {
-          vault,
-          theme: state.theme,
-          guideDone: state.guideDone,
-          updated: new Date().toISOString()
-        });
-      }
+    function updateGlobalUI() {
+      document.getElementById('set-gewicht').value = formatNL(state.gewicht);
+      document.getElementById('set-besteldagen').value = state.besteldagen;
+      document.getElementById('lev-datalist').innerHTML = state.leveranciers.map(l => `<option value="${l.naam}">`).join('');
     }
 
-    // --- UI & NAV ---
+    // --- UI ---
     window.nav = (id) => {
-      document.querySelectorAll('.content-page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('p-' + id).classList.add('active');
+      document.querySelector(`[onclick="nav('${id}')"]`)?.classList.add('active');
       if(id === 'items') renderItems();
-      if(id === 'instellingen') {
-        document.getElementById('set-gewicht').value = state.gewicht;
-        document.getElementById('set-color').value = state.theme;
-      }
+      if(id === 'bestellen') renderBestellen();
+      if(id === 'leveranciers') renderLeveranciers();
     };
 
-    function updateUI() {
-      document.documentElement.style.setProperty('--metro-color', state.theme);
-    }
-
-    function renderItems() {
-      const list = document.getElementById('items-list');
-      list.innerHTML = state.items.map(i => `
-        <div class="item-card">
-          <div style="font-weight:bold">${i.naam}</div>
-          <div style="font-size:0.9em; color:var(--metro-color)">Verbruik: ${parseFloat(i.verbruik).toFixed(2)}</div>
-        </div>
-      `).join('') || '<p>Geen items gevonden.</p>';
-    }
-
-    // --- FORM & SETTINGS ---
-    window.showItemForm = () => { document.getElementById('item-form').reset(); window.nav('item-form'); };
-    
-    document.getElementById('f-type').onchange = (e) => {
-      document.getElementById('med-fields').style.display = e.target.value === 'Medicatie' ? 'block' : 'none';
+    let currentFoto = "";
+    document.getElementById('f-foto-input').onchange = (e) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        currentFoto = ev.target.result;
+        document.getElementById('f-foto-preview').src = currentFoto;
+        document.getElementById('f-foto-preview').style.display = 'block';
+      };
+      reader.readAsDataURL(e.target.files[0]);
     };
+
+    window.showItemForm = () => { document.getElementById('item-form').reset(); currentFoto = ""; nav('form'); };
 
     document.getElementById('item-form').onsubmit = async (e) => {
       e.preventDefault();
+      const lev = document.getElementById('f-lev').value;
+      if (lev && !state.leveranciers.find(l => l.naam === lev)) state.leveranciers.push({ naam: lev });
+
       state.items.push({
+        id: Date.now(),
         naam: document.getElementById('f-naam').value,
-        type: document.getElementById('f-type').value,
-        verbruik: document.getElementById('f-verbruik').value
+        vorm: document.getElementById('f-vorm').value,
+        mgkg: parseNL(document.getElementById('f-mgkg').value),
+        conc: parseNL(document.getElementById('f-conc').value),
+        verbruik: parseNL(document.getElementById('f-verbruik').value),
+        voorraad: parseInt(document.getElementById('f-voorraad').value) || 0,
+        inhoudVerp: parseNL(document.getElementById('f-inhoud-verp').value),
+        leverancier: lev,
+        foto: currentFoto
       });
-      await sync();
-      window.nav('items');
+
+      await sync(); nav('items');
     };
 
-    document.getElementById('set-gewicht').onchange = (e) => { state.gewicht = e.target.value; sync(); };
-    document.getElementById('set-color').onchange = (e) => { state.theme = e.target.value; updateUI(); sync(); };
-
-    // --- GUIDANCE ---
-    let step = 0;
-    const steps = [
-      { t: "Gewicht", text: "Stel eerst het gewicht in onder Instellingen.", el: "tile-settings" },
-      { t: "Klaar", text: "Je data is nu end-to-end beveiligd.", el: "tile-items" }
-    ];
-    function startGuidance() { document.getElementById('guidance-overlay').style.display = 'flex'; showStep(); }
-    function showStep() {
-      const s = steps[step];
-      document.getElementById('guide-title').innerText = s.t;
-      document.getElementById('guide-text').innerText = s.text;
-      document.getElementById('guide-step').innerText = `Stap ${step+1}/2`;
-      document.querySelectorAll('.tile').forEach(t => t.classList.remove('highlight'));
-      document.getElementById(s.el).classList.add('highlight');
+    function renderItems() {
+      const l = document.getElementById('items-list');
+      l.innerHTML = state.items.map(i => `
+        <div class="item-row">
+          <img src="${i.foto || ''}" class="foto-circle" style="${!i.foto?'background:#eee':''}">
+          <div style="flex:1">
+            <div style="font-weight:600">${i.naam}</div>
+            <div style="font-size:0.8em; opacity:0.6">${i.vorm} • ${i.voorraad} verpakkingen</div>
+          </div>
+          <div onclick="delItem(${i.id})" style="color:#f87171; cursor:pointer;">🗑</div>
+        </div>
+      `).join('') || '<p style="text-align:center; opacity:0.5;">Geen artikelen.</p>';
     }
-    document.getElementById('guide-next-btn').onclick = () => {
-      step++;
-      if(step < steps.length) showStep();
-      else { document.getElementById('guidance-overlay').style.display = 'none'; state.guideDone = true; sync(); }
+
+    window.delItem = async (id) => { if(confirm('Verwijderen?')) { state.items = state.items.filter(i => i.id !== id); await sync(); renderItems(); } };
+
+    function renderBestellen() {
+      const c = document.getElementById('bestel-overzicht');
+      const perLev = {};
+      state.items.forEach(i => {
+        const nodig = i.verbruik * state.besteldagen;
+        const voorraad = i.voorraad * i.inhoudVerp;
+        if (voorraad < nodig) {
+          const extra = Math.ceil((nodig - voorraad) / i.inhoudVerp);
+          const l = i.leverancier || 'Onbekend';
+          if (!perLev[l]) perLev[l] = [];
+          perLev[l].push(`${extra}x ${i.naam}`);
+        }
+      });
+      let h = "";
+      for (const [l, itms] of Object.entries(perLev)) {
+        h += `<div class="bestel-block"><strong>${l}</strong><br>${itms.join('<br>')}</div>`;
+      }
+      c.innerHTML = h || "<p>Voorraad is voldoende.</p>";
+    }
+
+    function renderLeveranciers() {
+      document.getElementById('leveranciers-lijst').innerHTML = state.leveranciers.map(l => `
+        <div class="item-row"><div style="font-weight:600">${l.naam}</div></div>
+      `).join('') || '<p>Geen leveranciers.</p>';
+    }
+
+    window.saveSettings = async () => {
+      state.gewicht = parseNL(document.getElementById('set-gewicht').value);
+      state.besteldagen = parseInt(document.getElementById('set-besteldagen').value);
+      state.items.forEach(i => { if(i.mgkg && i.conc && state.gewicht) i.verbruik = (i.mgkg * state.gewicht) / i.conc; });
+      await sync(); alert('Opgeslagen!');
     };
+
+    document.getElementById('btn-login-google').onclick = () => signInWithPopup(auth, provider);
+    window.logout = () => signOut(auth);
   </script>
 </body>
 </html>
