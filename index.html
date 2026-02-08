@@ -209,6 +209,27 @@
   </div>
 
   <script>
+// Importeer de benodigde Firebase SDK's via CDN
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// JOUW CONFIGURATIE (Kopieer dit uit de Firebase Console)
+const firebaseConfig = {
+  apiKey: "AIzaSyAyiQ1NRg_JBuzXEDtmm-HMtdKFl_dP-mk",
+  authDomain: "medicatieapp-b7eff.firebaseapp.com",
+  projectId: "medicatieapp-b7eff",
+  storageBucket: "medicatieapp-b7eff.firebasestorage.app",
+  messagingSenderId: "420945260736",
+  appId: "1:420945260736:web:f05ded99fb85b64b97fd25",
+  measurementId: "G-8WQ44NKT3C"
+};
+
+// Initialiseer Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+    
     // --- STATE ---
     let state = {
       items: JSON.parse(localStorage.getItem('z_items') || '[]'),
