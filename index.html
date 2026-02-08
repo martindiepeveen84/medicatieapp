@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Medische Voorraadplanner - Zero-Knowledge</title>
+  <title>Medische Voorraadplanner - Pro</title>
   <style>
     :root {
       --accent: #6366f1;
@@ -22,7 +22,6 @@
       overflow-x: hidden;
     }
 
-    /* Responsive Navigation */
     header {
       display: flex; align-items: center; padding: 10px 20px;
       background: var(--glass); backdrop-filter: blur(10px);
@@ -39,7 +38,6 @@
         object-fit: cover; background: #ddd;
     }
 
-    /* Side Menu Fix */
     .side-menu { 
         position: fixed; left: -280px; top: 0; bottom: 0; width: 260px; 
         background: white; z-index: 2000; transition: transform 0.3s ease, visibility 0.3s; 
@@ -59,14 +57,20 @@
     .nav-btn.active { background: var(--accent); color: white; }
     .side-menu .nav-btn { display: block; width: 100%; text-align: left; margin-bottom: 10px; font-size: 1.1rem; }
 
-    /* Layout */
     .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px 20px 20px 30px; box-sizing: border-box; }
     .glass-card {
       background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
-      border-radius: var(--radius); padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); margin-bottom: 20px;
+      border-radius: var(--radius); padding: 24px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04); margin-bottom: 20px;
     }
 
-    /* Forms */
+    /* Guidance Styles */
+    #guidance-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      z-index: 5000; display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .guide-card { background: var(--accent); color: white; padding: 30px; border-radius: 24px; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+    .highlight { outline: 4px solid white !important; box-shadow: 0 0 25px white !important; z-index: 5001 !important; position: relative; }
+
     .form-group { margin-bottom: 18px; }
     label { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
     input, select { 
@@ -93,22 +97,32 @@
   <div id="login-screen">
     <div class="glass-card" style="text-align: center; width: 320px;">
       <h1 style="color:var(--accent); margin-bottom: 10px;">Medische Voorraadplanner</h1>
-      <p style="font-size: 0.9em; opacity: 0.7; margin-bottom: 25px;">Beheer uw zorg, bewaak uw privacy.</p>
       <button class="btn-primary" id="btn-login-google">INLOGGEN MET GOOGLE</button>
+    </div>
+  </div>
+
+  <div id="guidance-overlay">
+    <div class="guide-card">
+      <h3 id="guide-title">Welkom</h3>
+      <p id="guide-text" style="line-height: 1.5;"></p>
+      <div style="display:flex; justify-content: space-between; align-items: center; margin-top: 25px;">
+        <span id="guide-step" style="font-size: 0.8em; opacity: 0.8;"></span>
+        <button id="guide-next-btn" style="background:white; color:var(--accent); border:none; padding: 10px 20px; border-radius:12px; font-weight:bold; cursor:pointer;">VOLGENDE</button>
+      </div>
     </div>
   </div>
 
   <header>
     <div style="display:flex; align-items:center;">
-        <button class="hamburger" onclick="window.toggleMenu()">☰</button>
+        <button class="hamburger" id="hamburger-btn" onclick="window.toggleMenu()">☰</button>
         <div style="font-weight: 800; color: var(--accent); font-size: 1.2rem; cursor:pointer;" onclick="nav('dashboard')">Medische Voorraadplanner</div>
     </div>
     <div class="nav-desktop">
-      <button class="nav-btn active" onclick="nav('dashboard')">Home</button>
-      <button class="nav-btn" onclick="nav('stock')">Voorraad</button>
-      <button class="nav-btn" onclick="nav('items')">Artikelen</button>
-      <button class="nav-btn" onclick="nav('vendors')">Leveranciers</button>
-      <button class="nav-btn" onclick="nav('order')">Bestellen</button>
+      <button id="nav-dashboard" class="nav-btn active" onclick="nav('dashboard')">Home</button>
+      <button id="nav-stock" class="nav-btn" onclick="nav('stock')">Voorraad</button>
+      <button id="nav-items" class="nav-btn" onclick="nav('items')">Artikelen</button>
+      <button id="nav-vendors" class="nav-btn" onclick="nav('vendors')">Leveranciers</button>
+      <button id="nav-order" class="nav-btn" onclick="nav('order')">Bestellen</button>
       <img id="user-photo-nav" class="profile-img" onclick="nav('settings')" src="" alt="P">
     </div>
     <img id="user-photo-mobile" class="profile-img" style="display:none;" onclick="nav('settings')" src="" alt="P">
@@ -116,16 +130,15 @@
 
   <div class="menu-overlay" id="menu-overlay" onclick="window.toggleMenu()"></div>
   <aside class="side-menu" id="side-menu">
-    <button class="nav-btn" onclick="nav('dashboard')">🏠 Home</button>
-    <button class="nav-btn" onclick="nav('stock')">📦 Voorraad</button>
-    <button class="nav-btn" onclick="nav('items')">➕ Artikelen</button>
-    <button class="nav-btn" onclick="nav('vendors')">🏢 Leveranciers</button>
-    <button class="nav-btn" onclick="nav('order')">🛒 Bestellen</button>
-    <button class="nav-btn" onclick="nav('settings')">👤 Mijn Account</button>
+    <button id="side-dashboard" class="nav-btn" onclick="nav('dashboard')">🏠 Home</button>
+    <button id="side-stock" class="nav-btn" onclick="nav('stock')">📦 Voorraad</button>
+    <button id="side-items" class="nav-btn" onclick="nav('items')">➕ Artikelen</button>
+    <button id="side-vendors" class="nav-btn" onclick="nav('vendors')">🏢 Leveranciers</button>
+    <button id="side-order" class="nav-btn" onclick="nav('order')">🛒 Bestellen</button>
+    <button id="side-settings" class="nav-btn" onclick="nav('settings')">👤 Mijn Account</button>
   </aside>
 
   <div class="container">
-    
     <div id="p-dashboard" class="page active">
       <h1>Dashboard</h1>
       <div id="dashboard-list" class="items-grid"></div>
@@ -133,13 +146,12 @@
 
     <div id="p-stock" class="page">
       <h1>Voorraad Bijwerken</h1>
-      <p style="color:var(--text-sub); margin-bottom:20px;">Pas het aantal <b>verpakkingen</b> aan dat je nu in huis hebt.</p>
       <div id="stock-list" class="glass-card"></div>
     </div>
 
     <div id="p-items" class="page">
       <h1>Artikelen</h1>
-      <button class="btn-primary" onclick="window.showForm()" style="margin-bottom:20px;">+ NIEUW ARTIKEL</button>
+      <button id="btn-add-item" class="btn-primary" onclick="window.showForm()" style="margin-bottom:20px;">+ NIEUW ARTIKEL</button>
       <div id="full-list" class="items-grid"></div>
     </div>
 
@@ -150,7 +162,7 @@
     </div>
 
     <div id="p-order" class="page">
-      <h1>Besteladvies</h1>
+      <h1>Bestellen</h1>
       <div id="order-list"></div>
     </div>
 
@@ -158,11 +170,11 @@
       <div class="glass-card">
         <h2>Instellingen</h2>
         <div class="form-group">
-            <label>Thema Kleur (Accent)</label>
+            <label>Thema Kleur</label>
             <input type="color" id="cfg-color" onchange="window.updateColor(this.value)" style="height: 50px;">
         </div>
         <div class="form-group">
-          <label>Gewicht patiënt (kg)</label>
+          <label id="lbl-weight">Gewicht patiënt (kg)</label>
           <input id="cfg-weight" placeholder="bijv. 14,5">
         </div>
         <div class="form-group">
@@ -170,9 +182,7 @@
           <input id="cfg-days" type="number" placeholder="14">
         </div>
         <button class="btn-primary" onclick="window.saveSettings()">INSTELLINGEN OPSLAAN</button>
-        
         <div class="danger-zone">
-            <h3 style="color:#dc2626; margin-top:0;">Privacy & Account</h3>
             <button class="nav-btn" style="border: 1px solid #ccc; width:100%; margin-bottom:10px;" onclick="window.logout()">Uitloggen</button>
             <button class="nav-btn" style="background:#dc2626; color:white; width:100%;" onclick="window.deleteAccount()">Account & Data Wissen</button>
         </div>
@@ -198,7 +208,7 @@
                   <input id="f-daily" required>
                   <button type="button" class="btn-small" onclick="window.calculateDaily()">Bereken op basis van gewicht</button>
                 </div>
-                <div class="form-group"><label>Inhoud per verpakking (stuks/ml)</label><input id="f-pack" required></div>
+                <div class="form-group"><label>Inhoud per verpakking</label><input id="f-pack" required></div>
                 <div class="form-group"><label>Leverancier</label><select id="f-vendor-select"></select></div>
                 <button type="submit" class="btn-primary">OPSLAAN</button>
                 <button type="button" class="btn-primary" style="background:#ccc; margin-top:10px;" onclick="nav('items')">ANNULEREN</button>
@@ -238,10 +248,47 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    let state = { items: [], vendors: [], gewicht: 0, days: 14, accent: '#6366f1' };
+    let state = { items: [], vendors: [], gewicht: 0, days: 14, accent: '#6366f1', guideDone: false };
     let encryptionKey = null;
 
-    // --- CRYPTO (Vaste salt voor persistentie) ---
+    // --- ONBOARDING LOGICA ---
+    let currentGuideStep = 0;
+    const guideSteps = [
+      { t: "Stap 1: Gewicht", text: "Vul eerst het gewicht in bij Instellingen voor juiste berekeningen.", el: "nav-settings", sideEl: "side-settings" },
+      { t: "Stap 2: Artikelen", text: "Voeg hier je medicatie of hulpmiddelen toe.", el: "nav-items", sideEl: "side-items" },
+      { t: "Stap 3: Voorraad", text: "Houd hier bij hoeveel verpakkingen je in huis hebt.", el: "nav-stock", sideEl: "side-stock" }
+    ];
+
+    window.startGuidance = () => {
+      document.getElementById('guidance-overlay').style.display = 'flex';
+      renderStep();
+    };
+
+    function renderStep() {
+      const s = guideSteps[currentGuideStep];
+      document.getElementById('guide-title').innerText = s.t;
+      document.getElementById('guide-text').innerText = s.text;
+      document.getElementById('guide-step').innerText = `Stap ${currentGuideStep + 1} van ${guideSteps.length}`;
+      
+      document.querySelectorAll('.nav-btn, #user-photo-nav').forEach(el => el.classList.remove('highlight'));
+      
+      const target = window.innerWidth < 850 ? document.getElementById(s.sideEl) : document.getElementById(s.el);
+      if(target) target.classList.add('highlight');
+      else if(s.el === 'nav-settings') document.getElementById('user-photo-nav').classList.add('highlight');
+    }
+
+    document.getElementById('guide-next-btn').onclick = () => {
+      currentGuideStep++;
+      if(currentGuideStep < guideSteps.length) renderStep();
+      else {
+        document.getElementById('guidance-overlay').style.display = 'none';
+        document.querySelectorAll('.nav-btn, .profile-img').forEach(el => el.classList.remove('highlight'));
+        state.guideDone = true;
+        sync();
+      }
+    };
+
+    // --- CRYPTO & SYNC ---
     async function deriveKey(uid) {
       const enc = new TextEncoder();
       const base = await crypto.subtle.importKey("raw", enc.encode(uid), "PBKDF2", false, ["deriveKey"]);
@@ -268,12 +315,11 @@
       }
     }
 
-    // --- UI FUNCTIES ---
+    // --- UI ---
     window.toggleMenu = () => {
         const side = document.getElementById('side-menu');
         const overlay = document.getElementById('menu-overlay');
-        const isOpen = side.classList.contains('open');
-        if(isOpen) { side.classList.remove('open'); overlay.style.display = 'none'; }
+        if(side.classList.contains('open')) { side.classList.remove('open'); overlay.style.display = 'none'; }
         else { side.classList.add('open'); overlay.style.display = 'block'; }
     };
 
@@ -281,7 +327,8 @@
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('p-' + id).classList.add('active');
-      document.querySelectorAll(`[onclick="nav('${id}')"]`).forEach(b => b.classList.add('active'));
+      const dBtn = document.getElementById('nav-' + id);
+      if(dBtn) dBtn.classList.add('active');
       if(document.getElementById('side-menu').classList.contains('open')) window.toggleMenu();
       if(id === 'dashboard') renderDashboard();
       if(id === 'stock') renderStock();
@@ -304,7 +351,7 @@
         document.getElementById('user-photo-nav').src = user.photoURL || "";
         document.getElementById('user-photo-mobile').src = user.photoURL || "";
         document.getElementById('user-photo-mobile').style.display = window.innerWidth < 850 ? 'block' : 'none';
-        
+
         encryptionKey = await deriveKey(user.uid);
         const snap = await getDoc(doc(db, "users", user.uid));
         if (snap.exists() && snap.data().vault) {
@@ -317,12 +364,14 @@
         document.getElementById('cfg-color').value = state.accent || '#6366f1';
         document.getElementById('login-screen').style.display = 'none';
         window.nav('dashboard');
+        
+        if(!state.guideDone || state.gewicht == 0) window.startGuidance();
       } else {
         document.getElementById('login-screen').style.display = 'flex';
       }
     });
 
-    // --- ACTIONS ---
+    // --- FUNCTIONS ---
     window.calculateDaily = () => {
       const dPerKg = parseNL(document.getElementById('f-mgkg').value);
       const conc = parseNL(document.getElementById('f-conc').value);
@@ -334,13 +383,6 @@
       } else alert("Zorg dat gewicht (Instellingen), mg/kg en concentratie zijn ingevuld.");
     };
 
-    window.saveSettings = async () => {
-      state.gewicht = parseNL(document.getElementById('cfg-weight').value);
-      state.days = parseInt(document.getElementById('cfg-days').value) || 14;
-      await sync(); alert("Opgeslagen!");
-    };
-
-    // --- RENDERERS ---
     function renderDashboard() {
       document.getElementById('dashboard-list').innerHTML = state.items.map(i => `
         <div class="glass-card">
@@ -381,7 +423,7 @@
     function renderVendors() {
       document.getElementById('vendor-list').innerHTML = state.vendors.map(v => `
         <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center;">
-          <div><div style="font-weight:800;">${v.naam}</div><div style="opacity:0.6; font-size:0.85em;">${v.email || 'Geen e-mail'}</div></div>
+          <div><div style="font-weight:800;">${v.naam}</div><div style="opacity:0.6; font-size:0.85em;">${v.email || 'Geen mail'}</div></div>
           <button class="btn-circle" onclick="window.deleteVendor('${v.naam}')">🗑️</button>
         </div>`).join('') || '<p>Geen leveranciers.</p>';
     }
@@ -435,48 +477,10 @@
       document.getElementById('f-pack').value = formatNL(i.inhoud);
       document.getElementById('f-mgkg').value = formatNL(i.mgkg);
       document.getElementById('f-conc').value = formatNL(i.concentratie);
-      document.getElementById('f-expiry-days').value = i.expiryDays || "";
       updateVendorSelect(); document.getElementById('f-vendor-select').value = i.leverancier || "";
       window.toggleFields(); window.nav('form');
     };
 
     function updateVendorSelect() { document.getElementById('f-vendor-select').innerHTML = '<option value="">-- Geen --</option>' + state.vendors.map(v => `<option value="${v.naam}">${v.naam}</option>`).join(''); }
 
-    document.getElementById('item-form').onsubmit = async (e) => {
-      e.preventDefault();
-      const id = document.getElementById('f-id').value;
-      const item = {
-        id: id ? parseInt(id) : Date.now(),
-        type: document.getElementById('f-type').value,
-        naam: document.getElementById('f-name').value,
-        mgkg: parseNL(document.getElementById('f-mgkg').value),
-        concentratie: parseNL(document.getElementById('f-conc').value),
-        dosisUnit: document.getElementById('f-dosis-unit').value,
-        concUnit: document.getElementById('f-conc-unit').value,
-        expiryDays: parseInt(document.getElementById('f-expiry-days').value) || 0,
-        verbruik: parseNL(document.getElementById('f-daily').value),
-        inhoud: parseNL(document.getElementById('f-pack').value),
-        leverancier: document.getElementById('f-vendor-select').value,
-        voorraad: id ? state.items.find(it => it.id == id).voorraad : 0
-      };
-      if(id) state.items[state.items.findIndex(it => it.id == id)] = item;
-      else state.items.push(item);
-      await sync(); window.nav('items');
-    };
-
-    window.deleteItem = async (id) => { if(confirm('Artikel verwijderen?')) { state.items = state.items.filter(i => i.id !== id); await sync(); renderFullList(); } };
-    window.deleteVendor = async (name) => { if(confirm('Leverancier verwijderen?')) { state.vendors = state.vendors.filter(v => v.naam !== name); await sync(); renderVendors(); } };
-    window.showVendorForm = () => window.nav('vendor-form');
-    document.getElementById('vendor-form').onsubmit = async (e) => {
-      e.preventDefault();
-      state.vendors.push({ naam: document.getElementById('v-name').value, email: document.getElementById('v-email').value });
-      await sync(); window.nav('vendors');
-    };
-
-    window.toggleFields = () => { document.getElementById('med-fields').style.display = document.getElementById('f-type').value === 'Medicatie' ? 'block' : 'none'; };
-    window.logout = () => signOut(auth).then(() => location.reload());
-    window.deleteAccount = async () => { if(confirm("WEET U HET ZEKER? Al uw gegevens worden DEFINITIEF gewist.")) { await deleteDoc(doc(db, "users", auth.currentUser.uid)); await deleteUser(auth.currentUser); location.reload(); } };
-    document.getElementById('btn-login-google').onclick = () => signInWithPopup(auth, provider);
-  </script>
-</body>
-</html>
+    document.getElementById
