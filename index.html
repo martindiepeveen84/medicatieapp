@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
   <title>Medische Voorraadplanner</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
   <style>
     :root {
       --accent: #6366f1;
@@ -78,7 +84,6 @@
     }
     .btn-primary { background: var(--accent); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 700; width: 100%; cursor: pointer; }
     
-    /* Voorraad knoppen ernaast */
     .stock-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); gap: 10px; }
     .counter-group { display: flex; align-items: center; gap: 15px; background: white; padding: 5px 10px; border-radius: 12px; }
     .btn-circle { width: 44px; height: 44px; border-radius: 12px; border: 1px solid #ddd; background: white; cursor: pointer; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
@@ -263,7 +268,7 @@
       const s = steps[currentStep];
       document.getElementById('guide-title').innerText = s.t;
       document.getElementById('guide-text').innerText = s.text;
-      document.getElementById('guide-step').innerText = `Stap ${currentStep + 1} van 3`;
+      document.getElementById('guide-step').innerText = `Stap ${currentStep + 1} van ${steps.length}`;
       document.querySelectorAll('.nav-btn, .profile-img').forEach(el => el.classList.remove('highlight'));
       const target = window.innerWidth < 850 ? document.getElementById(s.mEl) : document.getElementById(s.el);
       if (target) target.classList.add('highlight');
@@ -345,7 +350,7 @@
         document.getElementById('user-photo-side').src = user.photoURL || "";
         encryptionKey = await deriveKey(user.uid);
         const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists()) {
+        if (snap.exists() && snap.data().vault) {
           const dec = await decrypt(snap.data().vault);
           if(dec) state = dec;
         }
@@ -360,7 +365,7 @@
       }
     });
 
-    // --- APP LOGIC ---
+    // --- LOGIC ---
     window.calculateDaily = () => {
       const d = parseNL(document.getElementById('f-mgkg').value);
       const c = parseNL(document.getElementById('f-conc').value);
@@ -375,7 +380,7 @@
     window.saveSettings = async () => {
       state.gewicht = parseNL(document.getElementById('cfg-weight').value);
       state.days = parseInt(document.getElementById('cfg-days').value) || 14;
-      await sync(); alert("Instellingen opgeslagen"); window.nav('dashboard');
+      await sync(); alert("Opgeslagen"); window.nav('dashboard');
     };
 
     function renderStock() {
@@ -401,7 +406,7 @@
           <div style="font-size:0.8em; color:var(--accent); font-weight:bold;">${i.type}</div>
           <div style="font-size:1.1em; font-weight:800;">${i.naam}</div>
           <div style="margin-top:8px; opacity:0.7;">Voorraad: <b>${i.voorraad}</b> verpakkingen</div>
-        </div>`).join('') || '<p style="text-align:center; opacity:0.5;">Geen artikelen.</p>';
+        </div>`).join('') || '<p style="text-align:center; opacity:0.5;">Voeg artikelen toe.</p>';
     }
 
     function renderFullList() {
@@ -418,7 +423,7 @@
     function renderVendors() {
       document.getElementById('vendor-list').innerHTML = state.vendors.map(v => `
         <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center;">
-          <div><div style="font-weight:800;">${v.naam}</div><div style="opacity:0.6; font-size:0.85em;">${v.email || 'Geen mail'}</div></div>
+          <div><div style="font-weight:800;">${v.naam}</div><div style="opacity:0.6;">${v.email || ''}</div></div>
           <button class="btn-circle" onclick="window.deleteVendor('${v.naam}')">🗑️</button>
         </div>`).join('') || '<p>Geen leveranciers.</p>';
     }
@@ -441,14 +446,14 @@
       let html = "";
       for (const [v, list] of Object.entries(perVendor)) {
         const ven = state.vendors.find(l => l.naam === v);
-        html += `<div class="glass-card"><h3>${v}</h3><ul>${list.map(it => `<li>${it.aantal}x verpakking ${it.naam}</li>`).join('')}</ul>
+        html += `<div class="glass-card"><h3>${v}</h3><ul>${list.map(it => `<li>${it.aantal}x ${it.naam}</li>`).join('')}</ul>
         ${ven && ven.email ? `<button class="btn-primary" onclick="window.mailOrder('${ven.email}', '${v}')">MAIL BESTELLING</button>` : ''}</div>`;
       }
       document.getElementById('order-list').innerHTML = html || '<div class="glass-card">Alles op voorraad.</div>';
     }
 
     window.mailOrder = (email, vName) => {
-        let text = `Beste,\n\nGraag bestel ik de volgende artikelen:\n\n`;
+        let text = `Beste,\n\nGraag bestel ik:\n\n`;
         state.items.forEach(i => {
           if(i.leverancier === vName) {
             const daily = parseNL(i.verbruik);
@@ -511,7 +516,7 @@
 
     window.toggleFields = () => { document.getElementById('med-fields').style.display = document.getElementById('f-type').value === 'Medicatie' ? 'block' : 'none'; };
     window.logout = () => signOut(auth).then(() => location.reload());
-    window.deleteAccount = async () => { if(confirm("WEET U HET ZEKER? Al uw gegevens worden DEFINITIEF gewist.")) { await deleteDoc(doc(db, "users", auth.currentUser.uid)); await deleteUser(auth.currentUser); location.reload(); } };
+    window.deleteAccount = async () => { if(confirm("Data wissen?")) { await deleteDoc(doc(db, "users", auth.currentUser.uid)); await deleteUser(auth.currentUser); location.reload(); } };
     document.getElementById('btn-login-google').onclick = () => signInWithPopup(auth, provider);
   </script>
 </body>
