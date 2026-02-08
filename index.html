@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zorg Beheer Pro - Metro Edition</title>
+  <title>Zorg Beheer Pro - Metro Cloud</title>
   <style>
     :root {
       --metro-color: #0078d7;
@@ -12,7 +12,7 @@
     }
 
     body { 
-      font-family: "Segoe UI", Tahoma, Helvetica, Sans-Serif; 
+      font-family: "Segoe UI", Tahoma, sans-serif; 
       background: var(--bg-color); 
       color: white; 
       margin: 0; 
@@ -51,18 +51,18 @@
     .tile-icon { font-size: 2.5em; margin-bottom: auto; }
     .highlight { outline: 4px solid #fff; z-index: 2001; position: relative; }
 
-    /* Pages & Forms */
+    /* Pages */
     .content-page { display: none; max-width: 800px; margin: 0 auto; animation: fadeIn 0.3s; }
     .content-page.active { display: block; }
-    
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     .back-btn { background: none; border: 1.5px solid white; color: white; padding: 8px 15px; margin-bottom: 20px; cursor: pointer; font-weight: bold; }
     .back-btn:hover { background: white; color: black; }
 
+    /* Forms */
     .form-group { margin-bottom: 20px; }
     label { font-weight: 600; margin-bottom: 8px; color: #bbb; display: block; font-size: 0.9em; }
-    input, select, textarea { 
+    input, select { 
       background: #1a1a1a; border: 2px solid #333; color: white; 
       padding: 12px; width: 100%; box-sizing: border-box; font-size: 1em;
     }
@@ -71,38 +71,30 @@
     .btn-main { background: var(--metro-color); color: white; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; font-size: 1em; }
     .calc-box { background: #111; padding: 15px; border-left: 4px solid var(--metro-color); margin: 10px 0; }
     .help-link { color: var(--metro-color); font-size: 0.85em; text-decoration: none; margin-right: 10px; }
-    .help-link:hover { text-decoration: underline; }
 
     /* Guidance Overlay */
     #guidance-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.85);
       z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px;
     }
-    .guide-card {
-      background: var(--metro-color); color: white; padding: 30px;
-      max-width: 400px; border: 1px solid rgba(255,255,255,0.3);
-      box-shadow: 0 0 50px rgba(0,0,0,1);
-    }
-    .guide-card h3 { margin-top: 0; font-size: 1.5em; font-weight: 300; }
+    .guide-card { background: var(--metro-color); color: white; padding: 30px; max-width: 400px; border: 1px solid rgba(255,255,255,0.3); }
     .guide-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
 
-    /* Login Stub */
+    /* Login Screen */
     #login-screen {
       position: fixed; inset: 0; background: #000;
       display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000;
     }
-
-    .item-card { background: #111; padding: 15px; margin-bottom: 10px; border-left: 5px solid var(--metro-color); position: relative; }
+    .item-card { background: #111; padding: 15px; margin-bottom: 10px; border-left: 5px solid var(--metro-color); }
   </style>
 </head>
 <body>
 
   <div id="login-screen">
     <h1>Zorg Beheer</h1>
-    <p>Beveiligde toegang vereist</p>
-    <button class="btn-main" style="width: 280px; margin: 5px;" onclick="handleLogin('Google')">Inloggen met Google</button>
-    <button class="btn-main" style="width: 280px; margin: 5px; background: #2f2f2f;" onclick="handleLogin('Microsoft')">Inloggen met Microsoft</button>
-    <button class="btn-main" style="width: 280px; margin: 5px; background: #333; border: 1px solid #fff;" onclick="handleLogin('Apple')">Inloggen met Apple</button>
+    <p>Beveiligde Cloud Toegang</p>
+    <button class="btn-main" id="login-google" style="width: 280px; margin: 5px;">Inloggen met Google</button>
+    <button class="btn-main" id="login-microsoft" style="width: 280px; margin: 5px; background: #2f2f2f;">Inloggen met Microsoft</button>
   </div>
 
   <div id="guidance-overlay">
@@ -111,7 +103,7 @@
       <p id="guide-text"></p>
       <div class="guide-nav">
         <span id="guide-step" style="font-size: 0.8em; opacity: 0.8;"></span>
-        <button class="back-btn" style="margin:0; padding: 5px 15px;" onclick="nextGuideStep()">VOLGENDE</button>
+        <button class="back-btn" id="guide-next-btn" style="margin:0; padding: 5px 15px;">VOLGENDE</button>
       </div>
     </div>
   </div>
@@ -119,19 +111,19 @@
   <div id="p-dashboard" class="content-page">
     <h1>Dashboard</h1>
     <div class="metro-container">
-      <div id="tile-items" class="tile wide" onclick="openPage('items')">
+      <div id="tile-items" class="tile wide" onclick="window.nav('items')">
         <div class="tile-icon">📦</div>
         <div class="tile-title">Artikelen & Voorraad</div>
       </div>
-      <div class="tile" onclick="openPage('bestellen')">
+      <div id="tile-bestellen" class="tile" onclick="window.nav('bestellen')">
         <div class="tile-icon">🛒</div>
         <div class="tile-title">Bestellen</div>
       </div>
-      <div id="tile-settings" class="tile" onclick="openPage('instellingen')">
+      <div id="tile-settings" class="tile" onclick="window.nav('instellingen')">
         <div class="tile-icon">⚙️</div>
         <div class="tile-title">Instellingen</div>
       </div>
-      <div class="tile" onclick="logout()">
+      <div class="tile" onclick="window.logout()">
         <div class="tile-icon">⬅️</div>
         <div class="tile-title">Uitloggen</div>
       </div>
@@ -139,242 +131,210 @@
   </div>
 
   <div id="p-items" class="content-page">
-    <button class="back-btn" onclick="openPage('dashboard')">⬅ DASHBOARD</button>
-    <h2>Voorraadbeheer</h2>
-    <button class="btn-main" style="margin-bottom: 20px;" onclick="showItemForm()">+ NIEUW ARTIKEL</button>
+    <button class="back-btn" onclick="window.nav('dashboard')">⬅ DASHBOARD</button>
+    <h2>Voorraad</h2>
+    <button class="btn-main" style="margin-bottom: 20px;" onclick="window.showItemForm()">+ NIEUW ARTIKEL</button>
     <div id="items-list"></div>
   </div>
 
   <div id="p-item-form" class="content-page">
-    <button class="back-btn" onclick="openPage('items')">⬅ ANNULEREN</button>
+    <button class="back-btn" onclick="window.nav('items')">⬅ ANNULEREN</button>
     <h2>Artikel Details</h2>
     <form id="item-form">
       <div class="form-group">
         <label>Type</label>
-        <select id="f-type" onchange="toggleMedFields()">
-          <option value="Hulpmiddel">Medisch Hulpmiddel (Spuiten, luiers, etc.)</option>
+        <select id="f-type">
+          <option value="Hulpmiddel">Medisch Hulpmiddel</option>
           <option value="Medicatie">Medicatie</option>
-          <option value="Voeding">Voeding</option>
         </select>
       </div>
       <div class="form-group">
-        <label>Naam Artikel</label>
-        <input id="f-naam" required placeholder="Bijv. Paracetamol vloeibaar">
+        <label>Naam</label>
+        <input id="f-naam" required>
       </div>
-
-      <div id="med-fields" style="display:none;">
-        <div class="calc-box">
-          <label>Doseringshulp (mg/kg)</label>
-          <a href="https://www.kinderformularium.nl" target="_blank" class="help-link">Kinderformularium ↗</a>
-          <a href="https://www.farmacotherapeutischkompas.nl" target="_blank" class="help-link">FK (Volwassenen) ↗</a>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-            <input type="number" id="f-mg-per-kg" step="0.01" placeholder="Dosis mg/kg" oninput="calculateDaily()">
-            <input type="number" id="f-concentratie" step="0.01" placeholder="Conc. mg/ml of mg/pil" oninput="calculateDaily()">
-          </div>
-        </div>
+      <div id="med-fields" style="display:none;" class="calc-box">
+        <label>mg/kg dosis</label>
+        <input type="number" id="f-mg-per-kg" step="0.01">
+        <label>Concentratie (mg/ml)</label>
+        <input type="number" id="f-concentratie" step="0.01">
       </div>
-
       <div class="form-group">
-        <label>Dagelijks verbruik (stuks/ml/pillen)</label>
+        <label>Verbruik per dag</label>
         <input id="f-verbruik" type="number" step="0.01" required>
-        <small id="calc-info" style="color: var(--metro-color)"></small>
       </div>
-
       <div class="form-group">
-        <label>Leverancier (Typ voor nieuwe)</label>
-        <input id="f-leverancier" list="lev-list" placeholder="Zoek of voeg toe...">
+        <label>Leverancier</label>
+        <input id="f-leverancier" list="lev-list">
         <datalist id="lev-list"></datalist>
       </div>
-      
-      <div class="form-group">
-        <label>Contact/Mail (Alleen bij nieuwe leverancier)</label>
-        <input id="f-contact" placeholder="bestelling@apotheek.nl">
-      </div>
-
-      <button type="submit" class="btn-main">OPSLAAN</button>
+      <button type="submit" class="btn-main">OPSLAAN IN CLOUD</button>
     </form>
   </div>
 
   <div id="p-instellingen" class="content-page">
-    <button class="back-btn" onclick="openPage('dashboard')">⬅ DASHBOARD</button>
+    <button class="back-btn" onclick="window.nav('dashboard')">⬅ DASHBOARD</button>
     <h2>Instellingen</h2>
     <div class="form-group">
-      <label>Lichaamsgewicht Patiënt (kg)</label>
-      <input type="number" id="set-gewicht" step="0.1" onchange="updateWeight()">
+      <label>Gewicht Patiënt (kg)</label>
+      <input type="number" id="set-gewicht" step="0.1">
     </div>
     <div class="form-group">
       <label>Accent Kleur</label>
-      <input type="color" id="set-color" onchange="updateColor(this.value)" style="height: 50px; padding: 5px; cursor: pointer;">
+      <input type="color" id="set-color">
     </div>
   </div>
 
-  <script>
-// Importeer de benodigde Firebase SDK's via CDN
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// JOUW CONFIGURATIE (Kopieer dit uit de Firebase Console)
-const firebaseConfig = {
-  apiKey: "AIzaSyAyiQ1NRg_JBuzXEDtmm-HMtdKFl_dP-mk",
-  authDomain: "medicatieapp-b7eff.firebaseapp.com",
-  projectId: "medicatieapp-b7eff",
-  storageBucket: "medicatieapp-b7eff.firebasestorage.app",
-  messagingSenderId: "420945260736",
-  appId: "1:420945260736:web:f05ded99fb85b64b97fd25",
-  measurementId: "G-8WQ44NKT3C"
-};
-
-// Initialiseer Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-    
-    // --- STATE ---
-    let state = {
-      items: JSON.parse(localStorage.getItem('z_items') || '[]'),
-      leveranciers: JSON.parse(localStorage.getItem('z_levs') || '[]'),
-      gewicht: parseFloat(localStorage.getItem('z_weight') || '0'),
-      theme: localStorage.getItem('z_theme') || '#0078d7',
-      guideDone: localStorage.getItem('z_guide') === 'true'
+    // VUL HIER JE EIGEN FIREBASE GEGEVENS IN
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyiQ1NRg_JBuzXEDtmm-HMtdKFl_dP-mk",
+      authDomain: "medicatieapp-b7eff.firebaseapp.com",
+      projectId: "medicatieapp-b7eff",
+      storageBucket: "medicatieapp-b7eff.firebasestorage.app",
+      messagingSenderId: "420945260736",
+      appId: "1:420945260736:web:f05ded99fb85b64b97fd25",
+      measurementId: "G-8WQ44NKT3C"
     };
 
-    // --- NAVIGATION ---
-    function openPage(id) {
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let state = { items: [], leveranciers: [], gewicht: 0, theme: '#0078d7', guideDone: false };
+
+    // --- AUTHENTICATIE ---
+    window.handleLogin = async (providerName) => {
+      const provider = providerName === 'Google' ? new GoogleAuthProvider() : new OAuthProvider('microsoft.com');
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (e) { alert("Inloggen mislukt"); }
+    };
+
+    window.logout = () => signOut(auth);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        document.getElementById('login-screen').style.display = 'none';
+        await loadData(user.uid);
+        window.nav('dashboard');
+        if(!state.guideDone) startGuidance();
+      } else {
+        document.getElementById('login-screen').style.display = 'flex';
+      }
+    });
+
+    // --- DATA SYNC ---
+    async function loadData(uid) {
+      const snap = await getDoc(doc(db, "users", uid));
+      if (snap.exists()) {
+        state = { ...state, ...snap.data() };
+        updateUI();
+      }
+    }
+
+    async function sync() {
+      if (auth.currentUser) {
+        await setDoc(doc(db, "users", auth.currentUser.uid), state);
+      }
+    }
+
+    // --- UI & NAV ---
+    window.nav = (id) => {
       document.querySelectorAll('.content-page').forEach(p => p.classList.remove('active'));
-      const p = document.getElementById('p-' + id);
-      if(p) p.classList.add('active');
+      document.getElementById('p-' + id).classList.add('active');
       if(id === 'items') renderItems();
       if(id === 'instellingen') {
         document.getElementById('set-gewicht').value = state.gewicht;
         document.getElementById('set-color').value = state.theme;
       }
-    }
-
-    function handleLogin(provider) {
-      document.getElementById('login-screen').style.display = 'none';
-      openPage('dashboard');
-      if(!state.guideDone) startGuidance();
-    }
-
-    function logout() { location.reload(); }
-
-    // --- DOSERING & GEWICHT ---
-    function toggleMedFields() {
-      document.getElementById('med-fields').style.display = document.getElementById('f-type').value === 'Medicatie' ? 'block' : 'none';
-    }
-
-    function calculateDaily() {
-      const mgKg = parseFloat(document.getElementById('f-mg-per-kg').value);
-      const conc = parseFloat(document.getElementById('f-concentratie').value);
-      if(mgKg && conc && state.gewicht > 0) {
-        const result = (mgKg * state.gewicht) / conc;
-        document.getElementById('f-verbruik').value = result.toFixed(2);
-        document.getElementById('calc-info').innerText = `Berekend op basis van ${state.gewicht}kg`;
-      }
-    }
-
-    function updateWeight() {
-      state.gewicht = parseFloat(document.getElementById('set-gewicht').value);
-      localStorage.setItem('z_weight', state.gewicht);
-      // Recalculate all meds
-      state.items = state.items.map(i => {
-        if(i.type === 'Medicatie' && i.mgKg && i.conc) {
-          i.verbruik = (i.mgKg * state.gewicht) / i.conc;
-        }
-        return i;
-      });
-      saveAndSync();
-    }
-
-    // --- GUIDANCE SYSTEM ---
-    let currentStep = 0;
-    const guideSteps = [
-      { t: "Stap 1: Gewicht", text: "Stel eerst het gewicht in onder Instellingen. Dit is cruciaal voor medicatie-berekeningen.", el: "tile-settings" },
-      { t: "Stap 2: Medicatie", text: "Voeg medicijnen toe met mg/kg. De app rekent de ml/pillen voor je uit.", el: "tile-items" },
-      { t: "Stap 3: Hulpmiddelen", text: "Voor spuiten of luiers vul je simpelweg het dagelijks aantal in.", el: "tile-items" },
-      { t: "Stap 4: Groei", text: "Patiënt gegroeid? Pas alleen het gewicht aan en alle doseringen verspringen mee!", el: "tile-settings" }
-    ];
-
-    function startGuidance() {
-      document.getElementById('guidance-overlay').style.display = 'flex';
-      showGuideStep();
-    }
-
-    function showGuideStep() {
-      const s = guideSteps[currentStep];
-      document.getElementById('guide-title').innerText = s.t;
-      document.getElementById('guide-text').innerText = s.text;
-      document.getElementById('guide-step').innerText = `Stap ${currentStep + 1} van 4`;
-      document.querySelectorAll('.tile').forEach(t => t.classList.remove('highlight'));
-      document.getElementById(s.el).classList.add('highlight');
-    }
-
-    function nextGuideStep() {
-      currentStep++;
-      if(currentStep < guideSteps.length) showGuideStep();
-      else {
-        document.getElementById('guidance-overlay').style.display = 'none';
-        document.querySelectorAll('.tile').forEach(t => t.classList.remove('highlight'));
-        localStorage.setItem('z_guide', 'true');
-      }
-    }
-
-    // --- CORE FUNCTIONS ---
-    function showItemForm() {
-      document.getElementById('item-form').reset();
-      updateLevList();
-      openPage('item-form');
-    }
-
-    document.getElementById('item-form').onsubmit = (e) => {
-      e.preventDefault();
-      const levNaam = document.getElementById('f-leverancier').value;
-      if(levNaam && !state.leveranciers.find(l => l.naam === levNaam)) {
-        state.leveranciers.push({ naam: levNaam, contact: document.getElementById('f-contact').value });
-      }
-      const item = {
-        id: Date.now(),
-        type: document.getElementById('f-type').value,
-        naam: document.getElementById('f-naam').value,
-        mgKg: parseFloat(document.getElementById('f-mg-per-kg').value),
-        conc: parseFloat(document.getElementById('f-concentratie').value),
-        verbruik: parseFloat(document.getElementById('f-verbruik').value),
-        leverancier: levNaam
-      };
-      state.items.push(item);
-      saveAndSync();
-      openPage('items');
     };
+
+    function updateUI() {
+      document.documentElement.style.setProperty('--metro-color', state.theme);
+      document.getElementById('lev-list').innerHTML = state.leveranciers.map(l => `<option value="${l.naam}">`).join('');
+    }
 
     function renderItems() {
       const list = document.getElementById('items-list');
       list.innerHTML = state.items.map(i => `
         <div class="item-card">
           <div style="font-weight:bold">${i.naam}</div>
-          <div style="font-size:0.9em; color:var(--metro-color)">Verbruik: ${i.verbruik.toFixed(2)} p/d</div>
-          <div style="font-size:0.8em; color:#777">Via: ${i.leverancier || 'Onbekend'}</div>
+          <div style="font-size:0.9em; color:var(--metro-color)">Verbruik: ${parseFloat(i.verbruik).toFixed(2)} p/d</div>
         </div>
-      `).join('') || '<p>Nog geen artikelen.</p>';
+      `).join('') || '<p>Geen items.</p>';
     }
 
-    function updateLevList() {
-      document.getElementById('lev-list').innerHTML = state.leveranciers.map(l => `<option value="${l.naam}">`).join('');
+    // --- GUIDANCE ---
+    let currentStep = 0;
+    const guideSteps = [
+      { t: "Stap 1: Gewicht", text: "Vul eerst het gewicht in bij Instellingen voor juiste doseringen.", el: "tile-settings" },
+      { t: "Stap 2: Toevoegen", text: "Bij Medicatie rekent de app mg/kg automatisch om naar ml.", el: "tile-items" }
+    ];
+
+    function startGuidance() {
+      document.getElementById('guidance-overlay').style.display = 'flex';
+      showStep();
     }
 
-    function updateColor(c) {
-      state.theme = c;
-      document.documentElement.style.setProperty('--metro-color', c);
-      localStorage.setItem('z_theme', c);
+    function showStep() {
+      const s = guideSteps[currentStep];
+      document.getElementById('guide-title').innerText = s.t;
+      document.getElementById('guide-text').innerText = s.text;
+      document.querySelectorAll('.tile').forEach(t => t.classList.remove('highlight'));
+      document.getElementById(s.el).classList.add('highlight');
     }
 
-    function saveAndSync() {
-      localStorage.setItem('z_items', JSON.stringify(state.items));
-      localStorage.setItem('z_levs', JSON.stringify(state.leveranciers));
-    }
+    document.getElementById('guide-next-btn').onclick = () => {
+      currentStep++;
+      if(currentStep < guideSteps.length) showStep();
+      else {
+        document.getElementById('guidance-overlay').style.display = 'none';
+        state.guideDone = true;
+        sync();
+      }
+    };
 
-    // Init Theme
-    updateColor(state.theme);
+    // --- EVENTS ---
+    document.getElementById('login-google').onclick = () => window.handleLogin('Google');
+    document.getElementById('login-microsoft').onclick = () => window.handleLogin('Microsoft');
+    
+    document.getElementById('f-type').onchange = (e) => {
+      document.getElementById('med-fields').style.display = e.target.value === 'Medicatie' ? 'block' : 'none';
+    };
+
+    document.getElementById('item-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const item = {
+        naam: document.getElementById('f-naam').value,
+        type: document.getElementById('f-type').value,
+        verbruik: document.getElementById('f-verbruik').value,
+        leverancier: document.getElementById('f-leverancier').value
+      };
+      state.items.push(item);
+      await sync();
+      window.nav('items');
+    };
+
+    document.getElementById('set-gewicht').onchange = (e) => {
+      state.gewicht = e.target.value;
+      sync();
+    };
+
+    document.getElementById('set-color').onchange = (e) => {
+      state.theme = e.target.value;
+      updateUI();
+      sync();
+    };
+
+    window.showItemForm = () => {
+      document.getElementById('item-form').reset();
+      window.nav('item-form');
+    };
+
   </script>
 </body>
 </html>
