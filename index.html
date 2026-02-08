@@ -3,195 +3,327 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zorg Beheer - Liquid Glass Edition</title>
+  <title>Zorg Beheer Pro - Liquid Glass</title>
   <style>
     :root {
       --accent: #6366f1;
-      --bg: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);
-      --glass: rgba(255, 255, 255, 0.7);
-      --glass-border: rgba(255, 255, 255, 0.4);
-      --text: #1f2937;
+      --bg: linear-gradient(135deg, #eef2ff 0%, #f9fafb 100%);
+      --glass: rgba(255, 255, 255, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.5);
+      --text-main: #111827;
+      --text-sub: #4b5563;
+      --radius: 20px;
     }
 
     body { 
-      font-family: "Segoe UI", system-ui, sans-serif; 
-      background: var(--bg); 
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
       background-attachment: fixed;
-      color: var(--text); 
-      margin: 0; 
-      padding: 20px;
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
+    /* Responsive Grid Container */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      box-sizing: border-box;
+      flex-grow: 1;
+    }
+
+    /* Glass Effect */
     .glass-card {
       background: var(--glass);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       border: 1px solid var(--glass-border);
-      border-radius: 24px;
-      padding: 25px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
       margin-bottom: 20px;
+      transition: transform 0.2s ease;
     }
 
-    h1, h2 { font-weight: 300; margin-top: 0; color: var(--accent); }
-
-    .nav-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; scrollbar-width: none; }
-    .nav-btn { 
-      background: var(--glass); border: 1px solid var(--glass-border); padding: 12px 24px; 
-      border-radius: 30px; cursor: pointer; white-space: nowrap; font-weight: 600; color: var(--text);
-      transition: all 0.2s;
+    /* Navigation */
+    .nav-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding: 10px 0;
+      background: rgba(249, 250, 251, 0.5);
+      backdrop-filter: blur(10px);
     }
-    .nav-btn.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
 
-    .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 0.85em; font-weight: 600; margin-bottom: 5px; opacity: 0.8; }
-    input, select { 
-      width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--glass-border);
-      background: rgba(255,255,255,0.5); font-size: 1em; box-sizing: border-box;
+    .nav-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 0 20px;
+      scrollbar-width: none;
+    }
+    .nav-bar::-webkit-scrollbar { display: none; }
+
+    .nav-btn {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      padding: 12px 20px;
+      border-radius: 30px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: 600;
+      color: var(--text-sub);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 0.95rem;
+    }
+    .nav-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Typography */
+    h1 { font-weight: 800; font-size: 2.2rem; color: var(--accent); margin: 10px 0 25px 0; }
+    h2 { font-weight: 700; font-size: 1.4rem; margin-top: 0; }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; color: var(--text-sub); }
+    input, select, textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.6);
+      font-size: 1rem;
+      box-sizing: border-box;
+      color: var(--text-main);
+      transition: border-color 0.2s;
     }
     input:focus { outline: none; border-color: var(--accent); background: #fff; }
 
-    .btn-action { 
-      background: var(--accent); color: white; border: none; padding: 16px; 
-      border-radius: 16px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1em;
-      transition: transform 0.1s;
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1.05rem;
+      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+      transition: all 0.2s;
     }
-    .btn-action:active { transform: scale(0.98); }
+    .btn-primary:active { transform: scale(0.98); }
 
-    .item-row { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding: 15px 0; }
-    .foto-circle { width: 60px; height: 60px; border-radius: 18px; object-fit: cover; background: #eee; border: 1px solid var(--glass-border); }
+    /* Stock Management UI */
+    .stock-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: rgba(255, 255, 255, 0.4);
+      padding: 10px;
+      border-radius: 18px;
+    }
+    .counter-btn {
+      width: 45px;
+      height: 45px;
+      border-radius: 12px;
+      border: none;
+      background: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      color: var(--accent);
+    }
 
+    /* Grid for Desktop */
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+    }
+    @media (max-width: 400px) { .items-grid { grid-template-columns: 1fr; } }
+
+    /* Security Overlay */
     #login-screen {
-      position: fixed; inset: 0; background: var(--bg); z-index: 3000;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 5000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .bestel-block { border-left: 4px solid var(--accent); padding-left: 15px; margin-bottom: 25px; }
-    .page { display: none; max-width: 800px; margin: 0 auto; animation: fadeIn 0.4s ease; }
-    .page.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .page { display: none; }
+    .page.active { display: block; animation: slideUp 0.4s ease-out; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #e0e7ff;
+      color: #4338ca;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body>
 
   <div id="login-screen">
-    <div class="glass-card" style="text-align: center; width: 320px;">
-      <h1>Zorg Beheer</h1>
-      <p style="margin-bottom: 25px; opacity: 0.7;">Beveiligde toegang</p>
-      <button class="btn-action" id="btn-login-google">INLOGGEN MET GOOGLE</button>
-      <p style="font-size: 0.7em; margin-top: 25px; opacity: 0.5; letter-spacing: 0.5px;">ZERO-KNOWLEDGE ENCRYPTED</p>
+    <div class="glass-card" style="text-align: center; width: 340px;">
+      <h1 style="margin-bottom: 10px;">Zorg Beheer</h1>
+      <p style="color: var(--text-sub); margin-bottom: 30px;">Beveiligd met end-to-end encryptie</p>
+      <button class="btn-primary" id="btn-login-google">INLOGGEN MET GOOGLE</button>
     </div>
   </div>
 
-  <div id="main-app" style="display:none;">
+  <div class="nav-wrapper">
     <div class="nav-bar">
-      <button class="nav-btn active" onclick="nav('items')">📦 Voorraad</button>
+      <button class="nav-btn active" onclick="nav('dashboard')">🏠 Home</button>
+      <button class="nav-btn" onclick="nav('stock')">📦 Voorraad Instellen</button>
+      <button class="nav-btn" onclick="nav('items')">➕ Artikelen Beheren</button>
       <button class="nav-btn" onclick="nav('bestellen')">🛒 Bestellen</button>
-      <button class="nav-btn" onclick="nav('leveranciers')">🏢 Leveranciers</button>
-      <button class="nav-btn" onclick="nav('instellingen')">⚙️ Instellingen</button>
+      <button class="nav-btn" onclick="nav('settings')">⚙️ Instellingen</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="p-dashboard" class="page active">
+      <h1>Overzicht</h1>
+      <div id="dashboard-list" class="items-grid"></div>
     </div>
 
-    <div id="p-items" class="page active">
-      <button class="btn-action" onclick="showItemForm()" style="margin-bottom:25px;">+ NIEUW ARTIKEL</button>
-      <div id="items-list" class="glass-card"></div>
+    <div id="p-stock" class="page">
+      <h1>Voorraad Bijwerken</h1>
+      <div id="stock-list" class="items-grid"></div>
+    </div>
+
+    <div id="p-items" class="page">
+      <h1>Artikelen</h1>
+      <button class="btn-primary" onclick="showForm()" style="margin-bottom: 25px;">+ NIEUW ARTIKEL TOEVOEGEN</button>
+      <div id="full-items-list" class="items-grid"></div>
     </div>
 
     <div id="p-bestellen" class="page">
-      <div class="glass-card">
-        <h2>Besteladvies</h2>
-        <div id="bestel-overzicht"></div>
-      </div>
+      <h1>Besteladvies</h1>
+      <div id="order-list"></div>
     </div>
 
-    <div id="p-leveranciers" class="page">
-      <div class="glass-card">
-        <h2>Leveranciers</h2>
-        <div id="leveranciers-lijst"></div>
-      </div>
-    </div>
-
-    <div id="p-instellingen" class="page">
+    <div id="p-settings" class="page">
       <div class="glass-card">
         <h2>Instellingen</h2>
         <div class="form-group">
-          <label>Gewicht patiënt (kg)</label>
-          <input id="set-gewicht" placeholder="bijv. 12,5">
+          <label>Lichaamsgewicht patiënt (kg)</label>
+          <input id="cfg-weight" placeholder="bijv. 14,5">
         </div>
         <div class="form-group">
           <label>Bestelperiode (dagen)</label>
-          <input id="set-besteldagen" type="number" value="14">
+          <input id="cfg-days" type="number" value="14">
         </div>
-        <button class="btn-action" onclick="saveSettings()">OPSLAAN</button>
-        <button class="btn-action" style="background: #f87171; margin-top: 15px;" onclick="window.logout()">UITLOGGEN</button>
+        <button class="btn-primary" onclick="saveSettings()">INSTELLINGEN OPSLAAN</button>
+        <button class="btn-primary" style="background: #f87171; margin-top: 15px;" onclick="window.logout()">UITLOGGEN</button>
       </div>
     </div>
 
     <div id="p-form" class="page">
       <div class="glass-card">
-        <h2 id="form-title">Artikel toevoegen</h2>
+        <h2 id="form-title">Nieuw Artikel</h2>
         <form id="item-form">
           <div class="form-group">
+            <label>Type Artikel</label>
+            <select id="f-type" onchange="toggleFields()">
+              <option value="Medicatie">Medicatie</option>
+              <option value="Hulpmiddel">Hulpmiddel (Luiers, Slangen, Stomazorg, etc.)</option>
+              <option value="Voeding">Voeding (Sondevoeding, Blended Diet)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label>Naam Artikel</label>
-            <input id="f-naam" required>
-          </div>
-          <div class="form-group">
-            <label>Vorm</label>
-            <select id="f-vorm">
-              <option value="Vloeistof">Vloeistof</option>
-              <option value="Pil">Pil</option>
-              <option value="Ampul">Ampul</option>
-              <option value="Sachet">Sachet</option>
-            </select>
+            <input id="f-name" required placeholder="bijv. Paracetamol of Luiers Maat 4">
           </div>
 
-          <div class="calc-box glass-card" style="background: rgba(255,255,255,0.2); margin-bottom: 20px;">
-            <label>Automatische dosering (optioneel)</label>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-              <input id="f-mgkg" placeholder="Dosis mg/kg">
-              <input id="f-conc" placeholder="Conc. mg/ml">
-            </div>
-            <select id="f-conc-unit" style="margin-top:10px;">
-              <option value="mg">Eenheid: milligram (mg)</option>
-              <option value="mcg">Eenheid: microgram (mcg)</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Totaal verbruik per dag (stuks/ml)</label>
-            <input id="f-verbruik" required placeholder="bijv. 5,0">
-          </div>
-
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <div id="med-section" class="glass-card" style="background: rgba(255,255,255,0.3); margin-bottom: 20px;">
             <div class="form-group">
-              <label>Huidige voorraad (verp.)</label>
-              <input id="f-voorraad" type="number" value="0">
+              <label>Vorm</label>
+              <select id="f-form">
+                <option value="Vloeistof">Vloeistof (ml)</option>
+                <option value="Pil">Pil / Tablet</option>
+                <option value="Ampul">Ampul</option>
+                <option value="Sachet">Sachet</option>
+              </select>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Eenheid dosering</label>
+                <select id="f-unit" onchange="autoFillConc()">
+                  <option value="milligram">milligram</option>
+                  <option value="microgram">microgram</option>
+                  <option value="milliliter">milliliter</option>
+                  <option value="microgram per milliliter">microgram per milliliter</option>
+                  <option value="milligram per milliliter">milligram per milliliter</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Dosering per kg (optioneel)</label>
+                <input id="f-mgkg" placeholder="bijv. 0,5">
+              </div>
             </div>
             <div class="form-group">
-              <label>Inhoud per verp. (stuks/ml)</label>
-              <input id="f-inhoud-verp" placeholder="bijv. 100">
+              <label id="lbl-conc">Concentratie (hoeveelheid per eenheid)</label>
+              <input id="f-conc" placeholder="bijv. 20">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label id="lbl-daily">Dagelijks verbruik (stuks of milliliter)</label>
+            <input id="f-daily" required placeholder="bijv. 4">
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Huidige voorraad (verpakkingen)</label>
+              <input id="f-stock" type="number" value="0">
+            </div>
+            <div class="form-group">
+              <label>Inhoud per verpakking</label>
+              <input id="f-pack-size" required placeholder="bijv. 30">
             </div>
           </div>
 
           <div class="form-group">
             <label>Leverancier</label>
-            <input id="f-lev" list="lev-datalist" placeholder="Naam leverancier">
-            <datalist id="lev-datalist"></datalist>
+            <input id="f-vendor" list="vendor-list" placeholder="Typ naam leverancier">
+            <datalist id="vendor-list"></datalist>
           </div>
 
           <div class="form-group">
-            <label>Houdbaarheid na openen (dagen)</label>
-            <input id="f-houdb" type="number" placeholder="Optioneel">
+            <label>Houdbaarheid na opening (dagen, indien van toepassing)</label>
+            <input id="f-expiry" type="number" placeholder="Laat leeg indien niet van toepassing">
           </div>
 
-          <div class="form-group">
-            <label>Foto</label>
-            <input type="file" accept="image/*" capture="environment" id="f-foto-input">
-            <img id="f-foto-preview" class="foto-circle" style="display:none; margin-top:15px; width:100px; height:100px;">
-          </div>
-
-          <button type="submit" class="btn-action">BEVEILIGD OPSLAAN</button>
-          <button type="button" class="btn-action" style="background:#94a3b8; margin-top:10px;" onclick="nav('items')">ANNULEREN</button>
+          <button type="submit" class="btn-primary">ARTIKEL OPSLAAN</button>
+          <button type="button" class="btn-primary" style="background: #94a3b8; margin-top: 10px;" onclick="nav('items')">ANNULEREN</button>
         </form>
       </div>
     </div>
@@ -202,7 +334,6 @@
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- JOUW FIREBASE CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyAyiQ1NRg_JBuzXEDtmm-HMtdKFl_dP-mk",
       authDomain: "medicatieapp-b7eff.firebaseapp.com",
@@ -228,7 +359,7 @@
       const enc = new TextEncoder();
       const base = await crypto.subtle.importKey("raw", enc.encode(uid), "PBKDF2", false, ["deriveKey"]);
       return crypto.subtle.deriveKey(
-        { name: "PBKDF2", salt: enc.encode("zorg-v3-salt"), iterations: 100000, hash: "SHA-256" },
+        { name: "PBKDF2", salt: enc.encode("zorg-v5-salt"), iterations: 100000, hash: "SHA-256" },
         base, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
       );
     }
@@ -247,24 +378,59 @@
       } catch(e) { return null; }
     }
 
+    // --- NAVIGATION ---
+    window.nav = (id) => {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('p-' + id).classList.add('active');
+      document.querySelector(`[onclick="nav('${id}')"]`)?.classList.add('active');
+      
+      if(id === 'dashboard') renderDashboard();
+      if(id === 'stock') renderStockEditor();
+      if(id === 'items') renderFullList();
+      if(id === 'bestellen') renderOrders();
+    };
+
+    // --- UI LOGIC ---
+    window.toggleFields = () => {
+      const type = document.getElementById('f-type').value;
+      const medSection = document.getElementById('med-section');
+      const dailyLabel = document.getElementById('lbl-daily');
+      
+      if(type === 'Medicatie') {
+        medSection.style.display = 'block';
+        dailyLabel.innerText = "Dagelijks verbruik (milliliter of stuks)";
+      } else {
+        medSection.style.display = 'none';
+        dailyLabel.innerText = "Dagelijks verbruik (aantal stuks per dag)";
+      }
+    };
+
+    window.autoFillConc = () => {
+      const unit = document.getElementById('f-unit').value;
+      const concField = document.getElementById('f-conc');
+      if(unit.includes("per") && !concField.value) {
+        concField.placeholder = "bijv. hoeveel " + unit;
+      }
+    };
+
     // --- AUTH ---
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         encryptionKey = await deriveKey(user.uid);
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
         await loadData(user.uid);
-        nav('items');
+        nav('dashboard');
       } else {
         document.getElementById('login-screen').style.display = 'flex';
-        document.getElementById('main-app').style.display = 'none';
       }
     });
 
     async function sync() {
-      if (!auth.currentUser) return;
-      const vault = await encrypt(state);
-      await setDoc(doc(db, "users", auth.currentUser.uid), { vault, ts: Date.now() });
+      if (auth.currentUser && encryptionKey) {
+        const vault = await encrypt(state);
+        await setDoc(doc(db, "users", auth.currentUser.uid), { vault, ts: Date.now() });
+      }
     }
 
     async function loadData(uid) {
@@ -273,111 +439,166 @@
         const dec = await decrypt(snap.data().vault);
         if (dec) state = dec;
       }
-      updateGlobalUI();
+      document.getElementById('cfg-weight').value = formatNL(state.gewicht);
+      document.getElementById('cfg-days').value = state.besteldagen;
+      updateVendorDatalist();
     }
 
-    function updateGlobalUI() {
-      document.getElementById('set-gewicht').value = formatNL(state.gewicht);
-      document.getElementById('set-besteldagen').value = state.besteldagen;
-      document.getElementById('lev-datalist').innerHTML = state.leveranciers.map(l => `<option value="${l.naam}">`).join('');
+    function updateVendorDatalist() {
+      const dl = document.getElementById('vendor-list');
+      dl.innerHTML = state.leveranciers.map(l => `<option value="${l.naam}">`).join('');
     }
 
-    // --- UI ---
-    window.nav = (id) => {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('p-' + id).classList.add('active');
-      document.querySelector(`[onclick="nav('${id}')"]`)?.classList.add('active');
-      if(id === 'items') renderItems();
-      if(id === 'bestellen') renderBestellen();
-      if(id === 'leveranciers') renderLeveranciers();
+    // --- RENDERING ---
+    function renderDashboard() {
+      const container = document.getElementById('dashboard-list');
+      container.innerHTML = state.items.map(item => `
+        <div class="glass-card">
+          <span class="badge">${item.type}</span>
+          <div style="font-weight:800; font-size:1.2rem; margin-bottom:5px;">${item.naam}</div>
+          <div style="color:var(--text-sub); font-size:0.9rem;">
+            Huidige voorraad: <b>${item.voorraad} verpakkingen</b><br>
+            Verbruik: ${formatNL(item.verbruik)} per dag<br>
+            Leverancier: ${item.leverancier || 'Niet opgegeven'}
+          </div>
+        </div>
+      `).join('') || '<p style="text-align:center; opacity:0.5; grid-column: 1/-1;">Geen artikelen gevonden. Ga naar Artikelen Beheren om er een toe te voegen.</p>';
+    }
+
+    function renderStockEditor() {
+      const container = document.getElementById('stock-list');
+      container.innerHTML = state.items.map(item => `
+        <div class="glass-card">
+          <div style="font-weight:700; margin-bottom:15px;">${item.naam}</div>
+          <div class="stock-controls">
+            <button class="counter-btn" onclick="updateStock('${item.id}', -1)">-</button>
+            <input type="number" value="${item.voorraad}" 
+                   style="text-align:center; font-weight:bold; border:none; background:transparent;"
+                   onchange="setStock('${item.id}', this.value)">
+            <button class="counter-btn" onclick="updateStock('${item.id}', 1)">+</button>
+            <span style="font-size:0.8rem; opacity:0.6;">verpakkingen</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.updateStock = async (id, delta) => {
+      const item = state.items.find(i => i.id == id);
+      if(item) {
+        item.voorraad = Math.max(0, parseInt(item.voorraad) + delta);
+        await sync();
+        renderStockEditor();
+      }
     };
 
-    let currentFoto = "";
-    document.getElementById('f-foto-input').onchange = (e) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        currentFoto = ev.target.result;
-        document.getElementById('f-foto-preview').src = currentFoto;
-        document.getElementById('f-foto-preview').style.display = 'block';
-      };
-      reader.readAsDataURL(e.target.files[0]);
+    window.setStock = async (id, val) => {
+      const item = state.items.find(i => i.id == id);
+      if(item) {
+        item.voorraad = Math.max(0, parseInt(val));
+        await sync();
+      }
     };
 
-    window.showItemForm = () => { document.getElementById('item-form').reset(); currentFoto = ""; nav('form'); };
+    function renderFullList() {
+      const container = document.getElementById('full-items-list');
+      container.innerHTML = state.items.map(item => `
+        <div class="glass-card">
+          <div style="display:flex; justify-content:space-between; align-items:start;">
+            <div>
+              <span class="badge">${item.type}</span>
+              <div style="font-weight:800;">${item.naam}</div>
+            </div>
+            <button onclick="deleteItem('${item.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem;">🗑</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderOrders() {
+      const container = document.getElementById('order-list');
+      const perVendor = {};
+      
+      state.items.forEach(i => {
+        const needed = i.verbruik * state.besteldagen;
+        const current = i.voorraad * i.inhoudVerp;
+        if(current < needed) {
+          const extra = Math.ceil((needed - current) / i.inhoudVerp);
+          const v = i.leverancier || 'Onbekende leverancier';
+          if(!perVendor[v]) perVendor[v] = [];
+          perVendor[v].push(`${extra} verpakkingen ${i.naam}`);
+        }
+      });
+
+      let html = "";
+      for (const [vendor, list] of Object.entries(perVendor)) {
+        html += `<div class="glass-card">
+          <h2 style="color:var(--accent); font-size:1.1rem;">${vendor}</h2>
+          <ul style="padding-left:20px; line-height:1.6;">${list.map(li => `<li>${li}</li>`).join('')}</ul>
+        </div>`;
+      }
+      container.innerHTML = html || '<div class="glass-card">Voorraad is voldoende voor de komende ' + state.besteldagen + ' dagen.</div>';
+    }
+
+    window.deleteItem = async (id) => {
+      if(confirm('Weet u zeker dat u dit artikel wilt verwijderen?')) {
+        state.items = state.items.filter(i => i.id != id);
+        await sync();
+        renderFullList();
+      }
+    };
+
+    // --- ACTIONS ---
+    window.showForm = () => {
+      document.getElementById('item-form').reset();
+      toggleFields();
+      nav('form');
+    };
 
     document.getElementById('item-form').onsubmit = async (e) => {
       e.preventDefault();
-      const lev = document.getElementById('f-lev').value;
-      if (lev && !state.leveranciers.find(l => l.naam === lev)) state.leveranciers.push({ naam: lev });
+      const vendor = document.getElementById('f-vendor').value;
+      if (vendor && !state.leveranciers.find(l => l.naam === vendor)) {
+        state.leveranciers.push({ naam: vendor });
+      }
 
-      state.items.push({
+      const item = {
         id: Date.now(),
-        naam: document.getElementById('f-naam').value,
-        vorm: document.getElementById('f-vorm').value,
+        type: document.getElementById('f-type').value,
+        naam: document.getElementById('f-name').value,
+        vorm: document.getElementById('f-form').value,
+        eenheid: document.getElementById('f-unit').value,
         mgkg: parseNL(document.getElementById('f-mgkg').value),
-        conc: parseNL(document.getElementById('f-conc').value),
-        verbruik: parseNL(document.getElementById('f-verbruik').value),
-        voorraad: parseInt(document.getElementById('f-voorraad').value) || 0,
-        inhoudVerp: parseNL(document.getElementById('f-inhoud-verp').value),
-        leverancier: lev,
-        foto: currentFoto
-      });
+        concentratie: parseNL(document.getElementById('f-conc').value),
+        verbruik: parseNL(document.getElementById('f-daily').value),
+        voorraad: parseInt(document.getElementById('f-stock').value) || 0,
+        inhoudVerp: parseNL(document.getElementById('f-pack-size').value),
+        leverancier: vendor,
+        houdbaarheid: document.getElementById('f-expiry').value
+      };
 
-      await sync(); nav('items');
+      state.items.push(item);
+      await sync();
+      nav('items');
     };
 
-    function renderItems() {
-      const l = document.getElementById('items-list');
-      l.innerHTML = state.items.map(i => `
-        <div class="item-row">
-          <img src="${i.foto || ''}" class="foto-circle" style="${!i.foto?'background:#eee':''}">
-          <div style="flex:1">
-            <div style="font-weight:600">${i.naam}</div>
-            <div style="font-size:0.8em; opacity:0.6">${i.vorm} • ${i.voorraad} verpakkingen</div>
-          </div>
-          <div onclick="delItem(${i.id})" style="color:#f87171; cursor:pointer;">🗑</div>
-        </div>
-      `).join('') || '<p style="text-align:center; opacity:0.5;">Geen artikelen.</p>';
-    }
-
-    window.delItem = async (id) => { if(confirm('Verwijderen?')) { state.items = state.items.filter(i => i.id !== id); await sync(); renderItems(); } };
-
-    function renderBestellen() {
-      const c = document.getElementById('bestel-overzicht');
-      const perLev = {};
+    window.saveSettings = async () => {
+      state.gewicht = parseNL(document.getElementById('cfg-weight').value);
+      state.besteldagen = parseInt(document.getElementById('cfg-days').value);
+      
+      // Auto-recalc dosages
       state.items.forEach(i => {
-        const nodig = i.verbruik * state.besteldagen;
-        const voorraad = i.voorraad * i.inhoudVerp;
-        if (voorraad < nodig) {
-          const extra = Math.ceil((nodig - voorraad) / i.inhoudVerp);
-          const l = i.leverancier || 'Onbekend';
-          if (!perLev[l]) perLev[l] = [];
-          perLev[l].push(`${extra}x ${i.naam}`);
+        if(i.type === 'Medicatie' && i.mgkg && i.concentratie && state.gewicht) {
+          i.verbruik = (i.mgkg * state.gewicht) / i.concentratie;
         }
       });
-      let h = "";
-      for (const [l, itms] of Object.entries(perLev)) {
-        h += `<div class="bestel-block"><strong>${l}</strong><br>${itms.join('<br>')}</div>`;
-      }
-      c.innerHTML = h || "<p>Voorraad is voldoende.</p>";
-    }
-
-    function renderLeveranciers() {
-      document.getElementById('leveranciers-lijst').innerHTML = state.leveranciers.map(l => `
-        <div class="item-row"><div style="font-weight:600">${l.naam}</div></div>
-      `).join('') || '<p>Geen leveranciers.</p>';
-    }
-
-    window.saveSettings = async () => {
-      state.gewicht = parseNL(document.getElementById('set-gewicht').value);
-      state.besteldagen = parseInt(document.getElementById('set-besteldagen').value);
-      state.items.forEach(i => { if(i.mgkg && i.conc && state.gewicht) i.verbruik = (i.mgkg * state.gewicht) / i.conc; });
-      await sync(); alert('Opgeslagen!');
+      
+      await sync();
+      alert('Instellingen opgeslagen. Medicatiedoseringen zijn indien nodig herrekend op basis van het nieuwe gewicht.');
     };
 
     document.getElementById('btn-login-google').onclick = () => signInWithPopup(auth, provider);
     window.logout = () => signOut(auth);
+
   </script>
 </body>
 </html>
