@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zorg Beheer Pro - Ultra</title>
+  <title>Medische Voorraadplanner - Zero-Knowledge</title>
   <style>
     :root {
       --accent: #6366f1;
@@ -19,32 +19,36 @@
       font-family: "Segoe UI", system-ui, sans-serif;
       background: var(--bg); background-attachment: fixed;
       color: var(--text-main); margin: 0; padding: 0; min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    /* Responsive Navigation */
     header {
-      display: flex; align-items: center; padding: 15px 20px;
+      display: flex; align-items: center; padding: 10px 20px;
       background: var(--glass); backdrop-filter: blur(10px);
       position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border);
+      justify-content: space-between;
     }
 
-    .hamburger { display: none; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent); margin-right: 15px; }
-    .nav-desktop { display: flex; gap: 10px; flex-grow: 1; justify-content: flex-end; }
+    .hamburger { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--accent); }
+    .nav-desktop { display: flex; gap: 10px; align-items: center; }
+    
+    .profile-img {
+        width: 35px; height: 35px; border-radius: 50%; 
+        border: 2px solid var(--accent); cursor: pointer;
+        object-fit: cover; background: #ddd;
+    }
+
     .side-menu { 
         position: fixed; left: -280px; top: 0; bottom: 0; width: 260px; 
-        background: white; z-index: 2000; transition: 0.3s; padding: 60px 20px;
-        box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+        background: white; z-index: 2000; transition: transform 0.3s ease, visibility 0.3s; 
+        padding: 60px 20px; visibility: hidden;
     }
-    .side-menu.open { left: 0; }
-    .menu-overlay { 
-        position: fixed; inset: 0; background: rgba(0,0,0,0.4); 
-        display: none; z-index: 1999; 
-    }
+    .side-menu.open { transform: translateX(280px); visibility: visible; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+    
+    .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; z-index: 1999; }
 
-    @media (max-width: 850px) {
-      .hamburger { display: block; }
-      .nav-desktop { display: none; }
-    }
+    @media (max-width: 850px) { .nav-desktop { display: none; } }
+    @media (min-width: 851px) { .hamburger { display: none; } }
 
     .nav-btn {
       background: none; border: 1px solid transparent; padding: 10px 18px;
@@ -53,91 +57,94 @@
     .nav-btn.active { background: var(--accent); color: white; }
     .side-menu .nav-btn { display: block; width: 100%; text-align: left; margin-bottom: 10px; font-size: 1.1rem; }
 
-    /* Glass Cards */
-    .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
+    .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px 20px 20px 30px; box-sizing: border-box; }
     .glass-card {
       background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
       border-radius: var(--radius); padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); margin-bottom: 20px;
     }
 
-    /* Forms */
     .form-group { margin-bottom: 18px; }
     label { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
-    label.required::after { content: " *"; color: #ef4444; }
     input, select { 
       width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--glass-border);
       background: white; font-size: 1rem; box-sizing: border-box;
     }
     .btn-primary { background: var(--accent); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 700; width: 100%; cursor: pointer; }
     
+    .btn-small { 
+      background: white; color: var(--accent); border: 1px solid var(--accent); 
+      padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; 
+      cursor: pointer; margin-top: 8px; display: inline-block;
+    }
+
     .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
     .stock-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
-    .counter-group { display: flex; align-items: center; gap: 10px; background: white; padding: 5px; border-radius: 12px; }
-    .btn-circle { width: 36px; height: 36px; border-radius: 10px; border: 1px solid #ddd; background: white; cursor: pointer; font-weight: bold; }
+    .btn-circle { width: 40px; height: 40px; border-radius: 10px; border: 1px solid #ddd; background: white; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
     #login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 6000; display: flex; align-items: center; justify-content: center; }
     .page { display: none; }
     .page.active { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    #guidance-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; display: none; align-items: center; justify-content: center; }
-    .guide-card { background: var(--accent); color: white; padding: 30px; border-radius: 24px; max-width: 400px; }
+    .danger-zone { border: 1px solid #fee2e2; background: #fff1f1; border-radius: 15px; padding: 20px; margin-top: 30px; }
   </style>
 </head>
 <body>
 
   <div id="login-screen">
-    <div class="glass-card" style="text-align: center; width: 300px;">
-      <h1>Zorg Beheer</h1>
+    <div class="glass-card" style="text-align: center; width: 320px;">
+      <h1 style="color:var(--accent); margin-bottom: 10px;">Medische Voorraadplanner</h1>
       <button class="btn-primary" id="btn-login-google">INLOGGEN MET GOOGLE</button>
     </div>
   </div>
 
   <header>
-    <button class="hamburger" onclick="toggleMenu()">☰</button>
-    <div style="font-weight: 800; color: var(--accent); font-size: 1.2rem;">Zorg Beheer</div>
+    <div style="display:flex; align-items:center;">
+        <button class="hamburger" onclick="window.toggleMenu()">☰</button>
+        <div style="font-weight: 800; color: var(--accent); font-size: 1.2rem; cursor:pointer;" onclick="nav('dashboard')">Medische Voorraadplanner</div>
+    </div>
+    
     <div class="nav-desktop">
       <button class="nav-btn active" onclick="nav('dashboard')">Home</button>
       <button class="nav-btn" onclick="nav('stock')">Voorraad</button>
       <button class="nav-btn" onclick="nav('items')">Artikelen</button>
       <button class="nav-btn" onclick="nav('vendors')">Leveranciers</button>
       <button class="nav-btn" onclick="nav('order')">Bestellen</button>
-      <button class="nav-btn" onclick="nav('settings')">⚙️</button>
+      <img id="user-photo-nav" class="profile-img" onclick="nav('settings')" src="" alt="Profiel">
     </div>
+    <img id="user-photo-mobile" class="profile-img" style="display:none;" onclick="nav('settings')" src="" alt="Profiel">
   </header>
 
-  <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+  <div class="menu-overlay" id="menu-overlay" onclick="window.toggleMenu()"></div>
   <aside class="side-menu" id="side-menu">
     <button class="nav-btn" onclick="nav('dashboard')">🏠 Home</button>
     <button class="nav-btn" onclick="nav('stock')">📦 Voorraad</button>
     <button class="nav-btn" onclick="nav('items')">➕ Artikelen</button>
     <button class="nav-btn" onclick="nav('vendors')">🏢 Leveranciers</button>
     <button class="nav-btn" onclick="nav('order')">🛒 Bestellen</button>
-    <button class="nav-btn" onclick="nav('settings')">⚙️ Instellingen</button>
+    <button class="nav-btn" onclick="nav('settings')">👤 Mijn Account</button>
   </aside>
 
   <div class="container">
-    
     <div id="p-dashboard" class="page active">
-      <h1>Overzicht</h1>
+      <h1>Dashboard</h1>
       <div id="dashboard-list" class="items-grid"></div>
     </div>
 
     <div id="p-stock" class="page">
-      <h1>Huidige Voorraad</h1>
-      <p style="color:var(--text-sub); margin-bottom:20px;">Pas hier het aantal <b>verpakkingen</b> aan dat je nu in huis hebt.</p>
+      <h1>Voorraad Bijwerken</h1>
       <div id="stock-list" class="glass-card"></div>
     </div>
 
     <div id="p-items" class="page">
-      <h1>Beheer Artikelen</h1>
-      <button class="btn-primary" onclick="showForm()" style="margin-bottom:20px;">+ NIEUW ARTIKEL</button>
+      <h1>Artikelen</h1>
+      <button class="btn-primary" onclick="window.showForm()" style="margin-bottom:20px;">+ NIEUW ARTIKEL</button>
       <div id="full-list" class="items-grid"></div>
     </div>
 
     <div id="p-vendors" class="page">
       <h1>Leveranciers</h1>
-      <button class="btn-primary" onclick="showVendorForm()" style="margin-bottom:20px;">+ LEVERANCIER TOEVOEGEN</button>
+      <button class="btn-primary" onclick="window.showVendorForm()" style="margin-bottom:20px;">+ LEVERANCIER TOEVOEGEN</button>
       <div id="vendor-list" class="items-grid"></div>
     </div>
 
@@ -148,90 +155,95 @@
 
     <div id="p-settings" class="page">
       <div class="glass-card">
-        <h2>Instellingen</h2>
+        <h2>Persoonlijke Instellingen</h2>
         <div class="form-group">
-          <label class="required">Gewicht patiënt (kg)</label>
+            <label>Thema Kleur (Accent)</label>
+            <input type="color" id="cfg-color" onchange="window.updateColor(this.value)" style="height: 50px; cursor:pointer;">
+        </div>
+        <div class="form-group">
+          <label>Gewicht patiënt (kg)</label>
           <input id="cfg-weight" placeholder="bijv. 14,5">
         </div>
         <div class="form-group">
-          <label class="required">Aantal dagen voorraad nodig</label>
-          <input id="cfg-days" type="number" placeholder="bijv. 14">
+          <label>Aantal dagen voorraad nodig</label>
+          <input id="cfg-days" type="number">
         </div>
-        <button class="btn-primary" onclick="saveSettings()">INSTELLINGEN OPSLAAN</button>
+        <button class="btn-primary" onclick="window.saveSettings()">INSTELLINGEN OPSLAAN</button>
+        
+        <div class="danger-zone">
+            <h3 style="color:#dc2626; margin-top:0;">Privacy & Account</h3>
+            <div style="display:flex; gap:10px;">
+                <button class="nav-btn" style="border: 1px solid #ccc;" onclick="window.logout()">Uitloggen</button>
+                <button class="nav-btn" style="background:#dc2626; color:white;" onclick="window.deleteAccount()">Account & Data Wissen</button>
+            </div>
+        </div>
       </div>
     </div>
 
     <div id="p-form" class="page">
-      <div class="glass-card">
-        <h2 id="form-title">Artikel</h2>
-        <form id="item-form">
-          <input type="hidden" id="f-id">
-          <div class="form-group">
-            <label class="required">Type</label>
-            <select id="f-type" onchange="toggleFields()">
-              <option value="Medicatie">Medicatie</option>
-              <option value="Hulpmiddel">Hulpmiddel</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="required">Naam</label>
-            <input id="f-name" required>
-          </div>
-          <div id="med-fields">
-            <div class="form-group">
-                <label>Dosis per kg (voor auto-berekening)</label>
-                <input id="f-mgkg">
-            </div>
-            <div class="form-group">
-                <label>Concentratie (mg per ml/stuk)</label>
-                <input id="f-conc">
-            </div>
-            <div class="form-group">
-                <label>Houdbaarheid na opening (aantal dagen)</label>
-                <input id="f-expiry-days" type="number" placeholder="Laat leeg indien onbeperkt">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="required">Dagelijks verbruik (stuks of ml)</label>
-            <input id="f-daily" required>
-          </div>
-          <div class="form-group">
-            <label class="required">Inhoud per verpakking</label>
-            <input id="f-pack" required>
-          </div>
-          <div class="form-group">
-            <label>Leverancier</label>
-            <select id="f-vendor-select"></select>
-          </div>
-          <button type="submit" class="btn-primary">OPSLAAN</button>
-          <button type="button" class="btn-primary" style="background:#ccc; margin-top:10px;" onclick="nav('items')">ANNULEREN</button>
-        </form>
-      </div>
+        <div class="glass-card">
+            <h2 id="form-title">Artikel</h2>
+            <form id="item-form">
+                <input type="hidden" id="f-id">
+                <div class="form-group"><label>Type</label><select id="f-type" onchange="window.toggleFields()"><option value="Medicatie">Medicatie</option><option value="Hulpmiddel">Hulpmiddel</option></select></div>
+                <div class="form-group"><label>Naam</label><input id="f-name" required></div>
+                
+                <div id="med-fields">
+                    <div class="form-group">
+                      <label>Dosis Eenheid</label>
+                      <select id="f-dosis-unit">
+                        <option value="mg">mg (milligram)</option>
+                        <option value="mcg">mcg (microgram)</option>
+                        <option value="mmol">mmol (millimol)</option>
+                      </select>
+                    </div>
+                    <div class="form-group"><label>Dosis per kg (per dag)</label><input id="f-mgkg" placeholder="bijv. 0,5"></div>
+                    
+                    <div class="form-group">
+                      <label>Concentratie Eenheid (per ml/stuk)</label>
+                      <select id="f-conc-unit">
+                        <option value="mg">mg</option>
+                        <option value="mcg">mcg</option>
+                        <option value="mmol">mmol</option>
+                      </select>
+                    </div>
+                    <div class="form-group"><label>Hoeveelheid per ml/stuk</label><input id="f-conc" placeholder="bijv. 20"></div>
+                    <div class="form-group"><label>Houdbaarheid na opening (dagen)</label><input id="f-expiry-days" type="number"></div>
+                </div>
+
+                <div class="form-group">
+                  <label>Dagelijks verbruik (stuks of ml)</label>
+                  <input id="f-daily" required placeholder="bijv. 4,5">
+                  <div id="calc-btn-container">
+                    <button type="button" class="btn-small" onclick="window.calculateDaily()">Bereken op basis van gewicht</button>
+                  </div>
+                </div>
+
+                <div class="form-group"><label>Inhoud per verpakking (stuks of ml)</label><input id="f-pack" required></div>
+                <div class="form-group"><label>Leverancier</label><select id="f-vendor-select"></select></div>
+                <button type="submit" class="btn-primary">ARTIKEL OPSLAAN</button>
+                <button type="button" class="btn-primary" style="background:#ccc; margin-top:10px;" onclick="nav('items')">ANNULEREN</button>
+            </form>
+        </div>
     </div>
 
     <div id="p-vendor-form" class="page">
-      <div class="glass-card">
-        <h2>Leverancier</h2>
-        <form id="vendor-form">
-          <div class="form-group">
-            <label class="required">Naam</label>
-            <input id="v-name" required>
-          </div>
-          <div class="form-group">
-            <label>E-mailadres (optioneel)</label>
-            <input id="v-email" type="email">
-          </div>
-          <button type="submit" class="btn-primary">OPSLAAN</button>
-          <button type="button" class="btn-primary" style="background:#ccc; margin-top:10px;" onclick="nav('vendors')">ANNULEREN</button>
-        </form>
-      </div>
+        <div class="glass-card">
+            <h2>Leverancier</h2>
+            <form id="vendor-form">
+                <div class="form-group"><label>Naam</label><input id="v-name" required></div>
+                <div class="form-group"><label>E-mailadres</label><input id="v-email" type="email"></div>
+                <button type="submit" class="btn-primary">OPSLAAN</button>
+                <button type="button" class="btn-primary" style="background:#ccc; margin-top:10px;" onclick="nav('vendors')">ANNULEREN</button>
+            </form>
+        </div>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAyiQ1NRg_JBuzXEDtmm-HMtdKFl_dP-mk",
@@ -247,15 +259,8 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    let state = { items: [], vendors: [], gewicht: 0, guideDone: false, days: 14 };
+    let state = { items: [], vendors: [], gewicht: 0, days: 14, accent: '#6366f1' };
     let encryptionKey = null;
-
-    // --- UTILS ---
-    window.toggleMenu = () => {
-        document.getElementById('side-menu').classList.toggle('open');
-        const overlay = document.getElementById('menu-overlay');
-        overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
-    };
 
     const parseNL = (v) => v ? parseFloat(v.toString().replace(',','.')) : 0;
     const formatNL = (v) => v ? v.toString().replace('.',',') : "";
@@ -265,7 +270,7 @@
       const enc = new TextEncoder();
       const base = await crypto.subtle.importKey("raw", enc.encode(uid), "PBKDF2", false, ["deriveKey"]);
       return crypto.subtle.deriveKey(
-        { name: "PBKDF2", salt: enc.encode("zorg-v8-salt"), iterations: 100000, hash: "SHA-256" },
+        { name: "PBKDF2", salt: enc.encode("medplanner-v1"), iterations: 100000, hash: "SHA-256" },
         base, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
       );
     }
@@ -287,14 +292,48 @@
       }
     }
 
-    // --- NAVIGATION ---
+    // --- LOGIC ---
+    window.calculateDaily = () => {
+      const dosisPerKg = parseNL(document.getElementById('f-mgkg').value);
+      const conc = parseNL(document.getElementById('f-conc').value);
+      const gewicht = parseNL(state.gewicht);
+      const dosisUnit = document.getElementById('f-dosis-unit').value;
+      const concUnit = document.getElementById('f-conc-unit').value;
+
+      if (gewicht <= 0) {
+        alert("Stel a.u.b. eerst het gewicht in bij Instellingen.");
+        return;
+      }
+      if (dosisPerKg > 0 && conc > 0) {
+        // Converteer alles naar een basis-eenheid (bijv. microgram) om veilig te rekenen
+        const factor = { 'mcg': 1, 'mg': 1000, 'mmol': 1000 }; 
+        // Opmerking: mmol conversie is versimpeld, medisch is dit afhankelijk van molaire massa, 
+        // maar in de context van vloeibare medicatie wordt vaak de eenheid-match gebruikt.
+        
+        const totaalDosisBasis = dosisPerKg * gewicht * factor[dosisUnit];
+        const concBasis = conc * factor[concUnit];
+        
+        const result = totaalDosisBasis / concBasis;
+        document.getElementById('f-daily').value = formatNL(result.toFixed(2));
+      } else {
+        alert("Vul a.u.b. alle velden in om te kunnen rekenen.");
+      }
+    };
+
+    window.toggleMenu = () => {
+        const side = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const isOpen = side.classList.contains('open');
+        if(isOpen) { side.classList.remove('open'); overlay.style.display = 'none'; }
+        else { side.classList.add('open'); overlay.style.display = 'block'; }
+    };
+
     window.nav = (id) => {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('p-' + id).classList.add('active');
       document.querySelectorAll(`[onclick="nav('${id}')"]`).forEach(b => b.classList.add('active'));
-      if(document.getElementById('side-menu').classList.contains('open')) toggleMenu();
-      
+      if(document.getElementById('side-menu').classList.contains('open')) window.toggleMenu();
       if(id === 'dashboard') renderDashboard();
       if(id === 'stock') renderStock();
       if(id === 'items') renderFullList();
@@ -302,32 +341,59 @@
       if(id === 'order') renderOrder();
     };
 
+    window.updateColor = (color) => {
+        state.accent = color;
+        document.documentElement.style.setProperty('--accent', color);
+    };
+
     // --- AUTH ---
     onAuthStateChanged(auth, async (user) => {
       if (user) {
+        const photoUrl = user.photoURL || "";
+        document.getElementById('user-photo-nav').src = photoUrl;
+        document.getElementById('user-photo-mobile').src = photoUrl;
+        document.getElementById('user-photo-mobile').style.display = window.innerWidth < 850 ? 'block' : 'none';
+
         encryptionKey = await deriveKey(user.uid);
         document.getElementById('login-screen').style.display = 'none';
         const snap = await getDoc(doc(db, "users", user.uid));
         if (snap.exists()) {
           const dec = await decrypt(snap.data().vault);
-          if(dec) state = { ...state, ...dec };
+          if(dec) {
+              state = { ...state, ...dec };
+              window.updateColor(state.accent || '#6366f1');
+          }
         }
         document.getElementById('cfg-weight').value = formatNL(state.gewicht);
         document.getElementById('cfg-days').value = state.days || 14;
-        nav('dashboard');
+        document.getElementById('cfg-color').value = state.accent || '#6366f1';
+        window.nav('dashboard');
+      } else {
+        document.getElementById('login-screen').style.display = 'flex';
       }
     });
 
-    // --- RENDERING ---
+    window.logout = () => signOut(auth).then(() => location.reload());
+
+    window.deleteAccount = async () => {
+        if(confirm("WEET U HET ZEKER? Al uw gegevens worden DEFINITIEF gewist.")) {
+            const user = auth.currentUser;
+            await deleteDoc(doc(db, "users", user.uid));
+            await deleteUser(user);
+            location.reload();
+        }
+    };
+
+    // --- RENDER FUNCTIONS ---
     function renderDashboard() {
       const container = document.getElementById('dashboard-list');
       container.innerHTML = state.items.map(i => `
         <div class="glass-card">
           <div style="font-size:0.8em; color:var(--accent); font-weight:bold;">${i.type}</div>
-          <div style="font-size:1.2em; font-weight:800;">${i.naam}</div>
-          <div style="margin-top:10px; opacity:0.7;">Voorraad: ${i.voorraad} verpakkingen</div>
+          <div style="font-size:1.1em; font-weight:800;">${i.naam}</div>
+          <div style="margin-top:8px; opacity:0.7;">Voorraad: <b>${i.voorraad}</b> verpakkingen</div>
         </div>
-      `).join('') || 'Geen data.';
+      `).join('') || '<p style="text-align:center; opacity:0.5;">Voeg artikelen toe om te beginnen.</p>';
     }
 
     function renderStock() {
@@ -336,12 +402,12 @@
         <div class="stock-row">
           <div style="font-weight:bold;">${i.naam}</div>
           <div class="counter-group">
-            <button class="btn-circle" onclick="adjStock(${i.id}, -1)">-</button>
-            <span style="min-width:30px; text-align:center;">${i.voorraad}</span>
-            <button class="btn-circle" onclick="adjStock(${i.id}, 1)">+</button>
+            <button class="btn-circle" onclick="window.adjStock(${i.id}, -1)">-</button>
+            <span style="min-width:30px; text-align:center; font-weight:bold;">${i.voorraad}</span>
+            <button class="btn-circle" onclick="window.adjStock(${i.id}, 1)">+</button>
           </div>
         </div>
-      `).join('') || 'Voeg eerst artikelen toe.';
+      `).join('') || '<p>Geen artikelen gevonden.</p>';
     }
 
     window.adjStock = async (id, delta) => {
@@ -357,8 +423,8 @@
         <div class="glass-card">
           <div style="font-weight:800; font-size:1.1rem;">${i.naam}</div>
           <div style="margin-top:10px; display:flex; gap:10px;">
-            <button class="btn-circle" onclick="editItem(${i.id})">✏️</button>
-            <button class="btn-circle" onclick="deleteItem(${i.id})" style="color:red">🗑️</button>
+            <button class="btn-circle" onclick="window.editItem(${i.id})">✏️</button>
+            <button class="btn-circle" onclick="window.deleteItem(${i.id})" style="color:red">🗑️</button>
           </div>
         </div>
       `).join('');
@@ -372,9 +438,9 @@
             <div style="font-weight:800;">${v.naam}</div>
             <div style="opacity:0.6; font-size:0.85em;">${v.email || 'Geen mailadres'}</div>
           </div>
-          <button class="btn-circle" onclick="deleteVendor('${v.naam}')">🗑️</button>
+          <button class="btn-circle" onclick="window.deleteVendor('${v.naam}')">🗑️</button>
         </div>
-      `).join('') || 'Geen leveranciers.';
+      `).join('') || '<p>Geen leveranciers.</p>';
     }
 
     function renderOrder() {
@@ -385,23 +451,16 @@
       state.items.forEach(i => {
         const dailyUse = parseNL(i.verbruik);
         const packSize = parseNL(i.inhoud);
-        const stockUnits = i.voorraad * packSize;
-        
-        // Houdbaarheid logica: hoeveel eenheden verbruik je voordat de verpakking over de datum is?
+        if(dailyUse <= 0 || packSize <= 0) return;
+
         let usablePerPack = packSize;
-        if(i.expiryDays) {
-            const maxUsePerOpen = dailyUse * i.expiryDays;
-            usablePerPack = Math.min(packSize, maxUsePerOpen);
+        if(i.expiryDays > 0) {
+            usablePerPack = Math.min(packSize, dailyUse * i.expiryDays);
         }
 
-        const effectiveNeeded = dailyUse * targetDays;
-        
-        // Bereken hoeveel verpakkingen je echt nodig hebt op basis van effectief bruikbare inhoud
-        const packsNeeded = Math.ceil(effectiveNeeded / usablePerPack);
-        const packsInStock = i.voorraad;
-
-        if(packsInStock < packsNeeded) {
-          const toOrder = packsNeeded - packsInStock;
+        const packsNeededTotal = Math.ceil((dailyUse * targetDays) / usablePerPack);
+        if(i.voorraad < packsNeededTotal) {
+          const toOrder = packsNeededTotal - i.voorraad;
           const v = i.leverancier || 'Onbekend';
           if(!perVendor[v]) perVendor[v] = [];
           perVendor[v].push({ naam: i.naam, aantal: toOrder });
@@ -414,39 +473,36 @@
         html += `<div class="glass-card">
           <h3>${vName}</h3>
           <ul style="padding-left:20px;">${list.map(it => `<li>${it.aantal}x verpakking ${it.naam}</li>`).join('')}</ul>
-          ${vendor && vendor.email ? `<button class="btn-primary" onclick="mailOrder('${vendor.email}', '${vName}')">BESTELLING MAILEN</button>` : '<p style="font-size:0.8em; color:orange;">Voeg een e-mailadres toe aan de leverancier om direct te mailen.</p>'}
+          ${vendor && vendor.email ? `<button class="btn-primary" onclick="window.mailOrder('${vendor.email}', '${vName}')">BESTELLING MAILEN</button>` : ''}
         </div>`;
       }
-      container.innerHTML = html || 'Alles op voorraad.';
+      container.innerHTML = html || '<div class="glass-card">Alles op voorraad.</div>';
     }
 
-    window.mailOrder = (email, vendorName) => {
-        // Hier hergebruiken we de logica van renderOrder om de tekst te genereren
+    window.mailOrder = (email, vName) => {
+        let text = `Beste,\n\nGraag bestel ik de volgende artikelen:\n\n`;
         const targetDays = state.days || 14;
-        let body = `Beste,\n\nGraag ontvang ik een bestelling voor de volgende artikelen:\n\n`;
-        
         state.items.forEach(i => {
-            if(i.leverancier === vendorName) {
+            if(i.leverancier === vName) {
                 const dailyUse = parseNL(i.verbruik);
                 const packSize = parseNL(i.inhoud);
                 let usablePerPack = packSize;
-                if(i.expiryDays) usablePerPack = Math.min(packSize, dailyUse * i.expiryDays);
+                if(i.expiryDays > 0) usablePerPack = Math.min(packSize, dailyUse * i.expiryDays);
                 const packsNeeded = Math.ceil((dailyUse * targetDays) / usablePerPack);
                 if(i.voorraad < packsNeeded) {
-                    body += `- ${packsNeeded - i.voorraad}x verpakking ${i.naam}\n`;
+                    text += `- ${packsNeeded - i.voorraad}x verpakking ${i.naam}\n`;
                 }
             }
         });
-        body += `\nMet vriendelijke groet.`;
-        window.location.href = `mailto:${email}?subject=Bestelling medische artikelen&body=${encodeURIComponent(body)}`;
+        text += `\nMet vriendelijke groet.`;
+        window.location.href = `mailto:${email}?subject=Bestelling medische artikelen&body=${encodeURIComponent(text)}`;
     };
 
-    // --- FORM ACTIONS ---
     window.showForm = () => {
       document.getElementById('item-form').reset();
       document.getElementById('f-id').value = "";
       updateVendorSelect();
-      nav('form');
+      window.nav('form');
     };
 
     window.editItem = (id) => {
@@ -459,14 +515,16 @@
       document.getElementById('f-mgkg').value = formatNL(item.mgkg);
       document.getElementById('f-conc').value = formatNL(item.concentratie);
       document.getElementById('f-expiry-days').value = item.expiryDays || "";
+      document.getElementById('f-dosis-unit').value = item.dosisUnit || "mg";
+      document.getElementById('f-conc-unit').value = item.concUnit || "mg";
       updateVendorSelect();
       document.getElementById('f-vendor-select').value = item.leverancier || "";
       window.toggleFields();
-      nav('form');
+      window.nav('form');
     };
 
     window.deleteItem = async (id) => {
-        if(confirm('Verwijderen?')) {
+        if(confirm('Artikel verwijderen?')) {
             state.items = state.items.filter(i => i.id !== id);
             await sync();
             renderFullList();
@@ -483,7 +541,7 @@
 
     function updateVendorSelect() {
       const sel = document.getElementById('f-vendor-select');
-      sel.innerHTML = '<option value="">-- Selecteer --</option>' + state.vendors.map(v => `<option value="${v.naam}">${v.naam}</option>`).join('');
+      sel.innerHTML = '<option value="">-- Geen --</option>' + state.vendors.map(v => `<option value="${v.naam}">${v.naam}</option>`).join('');
     }
 
     document.getElementById('item-form').onsubmit = async (e) => {
@@ -495,13 +553,14 @@
         naam: document.getElementById('f-name').value,
         mgkg: parseNL(document.getElementById('f-mgkg').value),
         concentratie: parseNL(document.getElementById('f-conc').value),
+        dosisUnit: document.getElementById('f-dosis-unit').value,
+        concUnit: document.getElementById('f-conc-unit').value,
         expiryDays: parseInt(document.getElementById('f-expiry-days').value) || 0,
         verbruik: parseNL(document.getElementById('f-daily').value),
         inhoud: parseNL(document.getElementById('f-pack').value),
         leverancier: document.getElementById('f-vendor-select').value,
         voorraad: id ? state.items.find(i => i.id == id).voorraad : 0
       };
-
       if(id) {
         const idx = state.items.findIndex(i => i.id == id);
         state.items[idx] = newItem;
@@ -509,10 +568,10 @@
         state.items.push(newItem);
       }
       await sync();
-      nav('items');
+      window.nav('items');
     };
 
-    window.showVendorForm = () => nav('vendor-form');
+    window.showVendorForm = () => window.nav('vendor-form');
     document.getElementById('vendor-form').onsubmit = async (e) => {
       e.preventDefault();
       state.vendors.push({
@@ -520,26 +579,31 @@
         email: document.getElementById('v-email').value
       });
       await sync();
-      nav('vendors');
+      window.nav('vendors');
     };
 
     window.saveSettings = async () => {
       state.gewicht = parseNL(document.getElementById('cfg-weight').value);
       state.days = parseInt(document.getElementById('cfg-days').value) || 14;
       
-      // Auto-recalc dosering als mg/kg is ingevuld
+      // Auto-recalc dosages
       state.items.forEach(i => {
         if(i.type === 'Medicatie' && i.mgkg && i.concentratie && state.gewicht) {
-            i.verbruik = (i.mgkg * state.gewicht) / i.concentratie;
+            const factor = { 'mcg': 1, 'mg': 1000, 'mmol': 1000 };
+            const totaalDosisBasis = i.mgkg * state.gewicht * factor[i.dosisUnit || 'mg'];
+            const concBasis = i.concentratie * factor[i.concUnit || 'mg'];
+            i.verbruik = totaalDosisBasis / concBasis;
         }
       });
       
       await sync();
-      alert('Opgeslagen!');
+      alert('Instellingen opgeslagen!');
     };
 
     window.toggleFields = () => {
-      document.getElementById('med-fields').style.display = document.getElementById('f-type').value === 'Medicatie' ? 'block' : 'none';
+      const isMed = document.getElementById('f-type').value === 'Medicatie';
+      document.getElementById('med-fields').style.display = isMed ? 'block' : 'none';
+      document.getElementById('calc-btn-container').style.display = isMed ? 'block' : 'none';
     };
 
     document.getElementById('btn-login-google').onclick = () => signInWithPopup(auth, provider);
