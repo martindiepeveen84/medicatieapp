@@ -6,13 +6,13 @@
   <title>Medische Voorraadplanner</title>
   
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#6366f1">
+  <meta name="theme-color" content="#8048ed">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
 
   <style>
     :root {
-      --accent: #6366f1;
+      --accent: #8048ed;
       --bg: linear-gradient(135deg, #eef2ff 0%, #f9fafb 100%);
       --glass: rgba(255, 255, 255, 0.75);
       --glass-border: rgba(255, 255, 255, 0.5);
@@ -84,14 +84,18 @@
     }
     .btn-primary { background: var(--accent); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 700; width: 100%; cursor: pointer; }
     
-    .stock-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); gap: 10px; }
-    .counter-group { display: flex; align-items: center; gap: 15px; background: white; padding: 5px 10px; border-radius: 12px; }
-    .btn-circle { width: 44px; height: 44px; border-radius: 12px; border: 1px solid #ddd; background: white; cursor: pointer; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+    .stock-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; gap: 10px; border-top: 1px solid rgba(0,0,0,0.05); margin-top: 10px; }
+    .counter-group { display: flex; align-items: center; gap: 12px; background: white; padding: 4px 8px; border-radius: 12px; border: 1px solid var(--glass-border); }
+    .btn-circle { width: 36px; height: 36px; border-radius: 10px; border: 1px solid #ddd; background: white; cursor: pointer; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
 
     #login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 6000; display: flex; align-items: center; justify-content: center; }
     .page { display: none; width: 100%; }
     .page.active { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .sort-container { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+    .sort-container label { font-size: 0.85rem; font-weight: 700; color: var(--text-sub); }
+    .sort-container select { width: auto; padding: 8px 12px; font-size: 0.85rem; border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -121,7 +125,6 @@
     </div>
     <div class="nav-desktop">
       <button id="nav-dashboard" class="nav-btn active" onclick="nav('dashboard')">Home</button>
-      <button id="nav-stock" class="nav-btn" onclick="nav('stock')">Voorraad</button>
       <button id="nav-items" class="nav-btn" onclick="nav('items')">Artikelen</button>
       <button id="nav-vendors" class="nav-btn" onclick="nav('vendors')">Leveranciers</button>
       <button id="nav-order" class="nav-btn" onclick="nav('order')">Bestellen</button>
@@ -133,26 +136,30 @@
   <aside class="side-menu" id="side-menu">
     <div style="flex-grow: 1;">
         <button id="side-dashboard" class="nav-btn" onclick="nav('dashboard')">Home</button>
-        <button id="side-stock" class="nav-btn" onclick="nav('stock')">Voorraad</button>
         <button id="side-items" class="nav-btn" onclick="nav('items')">Artikelen</button>
         <button id="side-vendors" class="nav-btn" onclick="nav('vendors')">Leveranciers</button>
         <button id="side-order" class="nav-btn" onclick="nav('order')">Bestellen</button>
     </div>
     <div style="padding-top: 20px; border-top: 1px solid #eee; display: flex; align-items: center; gap: 15px; cursor: pointer;" onclick="nav('settings')">
         <img id="user-photo-side" class="profile-img" src="" alt="P">
-        <span style="font-weight: 600; color: var(--text-sub);">Configuratie</span>
+        <span style="font-weight: 600; color: var(--text-sub);">Instellingen</span>
     </div>
   </aside>
 
   <div class="container">
     <div id="p-dashboard" class="page active">
       <h1>Dashboard</h1>
+      <div class="sort-container">
+        <label>Sorteer op:</label>
+        <select id="dashboard-sort" onchange="renderDashboard()">
+            <option value="name">Naam</option>
+            <option value="stock">Aantal verpakkingen</option>
+            <option value="days">Voorraad in dagen</option>
+            <option value="vendor">Leverancier</option>
+            <option value="type">Type artikel</option>
+        </select>
+      </div>
       <div id="dashboard-list" class="items-grid"></div>
-    </div>
-
-    <div id="p-stock" class="page">
-      <h1>Voorraad Bijwerken</h1>
-      <div id="stock-list" class="glass-card"></div>
     </div>
 
     <div id="p-items" class="page">
@@ -169,21 +176,24 @@
 
     <div id="p-order" class="page">
       <h1>Bestellen</h1>
+      <div class="glass-card">
+          <label>Aantal dagen voorraad nodig</label>
+          <input id="order-cfg-days" type="number" oninput="window.updateOrderDays(this.value)">
+      </div>
       <div id="order-list"></div>
     </div>
 
     <div id="p-settings" class="page">
       <div class="glass-card">
-        <h2>Configuratie</h2>
+        <h2>Instellingen</h2>
         <div class="form-group"><label>Thema Kleur</label><input type="color" id="cfg-color" onchange="window.updateColor(this.value)"></div>
         <div class="form-group"><label>Gewicht patiënt (kg)</label><input id="cfg-weight" placeholder="bijv. 14,5"></div>
-        <div class="form-group"><label>Aantal dagen voorraad nodig</label><input id="cfg-days" type="number"></div>
         <button class="btn-primary" onclick="window.saveSettings()">OPSLAAN</button>
         <button class="btn-primary" style="background:#dc2626; margin-top:20px;" onclick="window.logout()">Uitloggen</button>
         <hr style="margin: 30px 0; opacity: 0.2;">
         <div style="background: #fff1f1; padding: 20px; border-radius: 15px; border: 1px solid #fee2e2;">
             <h3 style="color: #dc2626; margin-top: 0;">Account Verwijderen</h3>
-            <p style="font-size: 0.9em; color: #7f1d1d;">Hiermee worden al uw gegevens en uw account definitief gewist. Dit kan niet ongedaan worden gemaakt.</p>
+            <p style="font-size: 0.9em; color: #7f1d1d;">Hiermee worden al uw gegevens en uw account definitief gewist.</p>
             <button class="btn-primary" style="background:#dc2626;" onclick="window.deleteAccount()">Data & Account Wissen</button>
         </div>
       </div>
@@ -218,7 +228,7 @@
 
     <div id="p-vendor-form" class="page">
         <div class="glass-card">
-            <h2>Leverancier</h2>
+            <h2>Leverancier details</h2>
             <form id="vendor-form">
                 <div class="form-group"><label>Naam</label><input id="v-name" required></div>
                 <div class="form-group"><label>E-mailadres</label><input id="v-email" type="email"></div>
@@ -248,13 +258,13 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    let state = { items: [], vendors: [], gewicht: 0, days: 14, accent: '#6366f1', guideDone: false };
+    let state = { items: [], vendors: [], gewicht: 0, days: 14, accent: '#8048ed', guideDone: false };
     let encryptionKey = null;
 
     // --- ONBOARDING ---
     let currentStep = 0;
     const steps = [
-      { t: "Stap 1: Gewicht", text: "Vul eerst het gewicht in bij Configuratie voor juiste berekeningen.", el: "user-photo-nav", mEl: "user-photo-side" },
+      { t: "Stap 1: Gewicht", text: "Vul eerst het gewicht in bij Instellingen voor juiste berekeningen.", el: "user-photo-nav", mEl: "user-photo-side" },
       { t: "Stap 2: Leveranciers", text: "Voeg je apotheek toe om bestellingen te kunnen mailen.", el: "nav-vendors", mEl: "side-vendors" },
       { t: "Stap 3: Artikelen", text: "Voeg hier medicatie of hulpmiddelen toe.", el: "nav-items", mEl: "side-items" }
     ];
@@ -268,7 +278,7 @@
       const s = steps[currentStep];
       document.getElementById('guide-title').innerText = s.t;
       document.getElementById('guide-text').innerText = s.text;
-      document.getElementById('guide-step').innerText = `Stap ${currentStep + 1} van ${steps.length}`;
+      document.getElementById('guide-step').innerText = `Stap ${currentStep + 1} van 3`;
       document.querySelectorAll('.nav-btn, .profile-img').forEach(el => el.classList.remove('highlight'));
       const target = window.innerWidth < 850 ? document.getElementById(s.mEl) : document.getElementById(s.el);
       if (target) target.classList.add('highlight');
@@ -329,7 +339,6 @@
       if(sBtn) sBtn.classList.add('active');
       if(document.getElementById('side-menu').classList.contains('open')) window.toggleMenu();
       if(id === 'dashboard') renderDashboard();
-      if(id === 'stock') renderStock();
       if(id === 'items') renderFullList();
       if(id === 'vendors') renderVendors();
       if(id === 'order') renderOrder();
@@ -354,9 +363,10 @@
           const dec = await decrypt(snap.data().vault);
           if(dec) state = dec;
         }
-        window.updateColor(state.accent || '#6366f1');
+        window.updateColor(state.accent || '#8048ed');
         document.getElementById('cfg-weight').value = formatNL(state.gewicht);
-        document.getElementById('cfg-color').value = state.accent || '#6366f1';
+        document.getElementById('order-cfg-days').value = state.days || 14;
+        document.getElementById('cfg-color').value = state.accent || '#8048ed';
         document.getElementById('login-screen').style.display = 'none';
         window.nav('dashboard');
         if(!state.guideDone || state.gewicht == 0) window.startGuidance();
@@ -377,37 +387,70 @@
       } else alert("Vul mg/kg, concentratie en gewicht in.");
     };
 
-    window.saveSettings = async () => {
-      state.gewicht = parseNL(document.getElementById('cfg-weight').value);
-      state.days = parseInt(document.getElementById('cfg-days').value) || 14;
-      await sync(); alert("Opgeslagen"); window.nav('dashboard');
+    window.updateOrderDays = (val) => {
+        state.days = parseInt(val) || 0;
+        renderOrder();
+        sync();
     };
 
-    function renderStock() {
-      document.getElementById('stock-list').innerHTML = state.items.map(i => `
-        <div class="stock-row">
-          <div style="font-weight:bold;">${i.naam}</div>
-          <div class="counter-group">
-            <button class="btn-circle" onclick="window.adjStock(${i.id}, -1)">-</button>
-            <span style="min-width:30px; text-align:center; font-weight:bold;">${i.voorraad}</span>
-            <button class="btn-circle" onclick="window.adjStock(${i.id}, 1)">+</button>
+    window.saveSettings = async () => {
+      state.gewicht = parseNL(document.getElementById('cfg-weight').value);
+      await sync(); alert("Instellingen opgeslagen"); window.nav('dashboard');
+    };
+
+    window.renderDashboard = () => {
+      const sortVal = document.getElementById('dashboard-sort').value;
+      const sortedItems = [...state.items].sort((a, b) => {
+          if (sortVal === 'name') return a.naam.localeCompare(b.naam);
+          if (sortVal === 'stock') return b.voorraad - a.voorraad;
+          if (sortVal === 'vendor') return (a.leverancier || '').localeCompare(b.leverancier || '');
+          if (sortVal === 'type') return a.type.localeCompare(b.type);
+          if (sortVal === 'days') {
+              const getDays = (item) => {
+                  const daily = parseNL(item.verbruik);
+                  const pack = parseNL(item.inhoud);
+                  if (daily <= 0 || pack <= 0) return 0;
+                  let usable = pack;
+                  if (item.expiryDays > 0) usable = Math.min(pack, daily * item.expiryDays);
+                  return (item.voorraad * usable) / daily;
+              };
+              return getDays(a) - getDays(b);
+          }
+          return 0;
+      });
+
+      document.getElementById('dashboard-list').innerHTML = sortedItems.map(i => {
+        const daily = parseNL(i.verbruik);
+        const pack = parseNL(i.inhoud);
+        let daysText = "";
+        if (daily > 0 && pack > 0) {
+            let usable = pack;
+            if (i.expiryDays > 0) usable = Math.min(pack, daily * i.expiryDays);
+            const daysLeft = Math.floor((i.voorraad * usable) / daily);
+            daysText = `<div style="font-size:0.8rem; margin-top:4px; color:${daysLeft < 7 ? '#ef4444' : 'inherit'}">Voorraad voor ± ${daysLeft} dagen</div>`;
+        }
+
+        return `
+        <div class="glass-card">
+          <div style="font-size:0.8em; color:var(--accent); font-weight:bold;">${i.type}</div>
+          <div style="font-size:1.1em; font-weight:800;">${i.naam}</div>
+          <div style="font-size:0.8rem; opacity:0.6;">${i.leverancier || 'Geen leverancier'}</div>
+          ${daysText}
+          <div class="stock-row">
+            <div style="font-size:0.9em; opacity:0.7;">Verpakkingen:</div>
+            <div class="counter-group">
+                <button class="btn-circle" onclick="window.adjStock(${i.id}, -1)">-</button>
+                <span style="min-width:30px; text-align:center; font-weight:bold;">${i.voorraad}</span>
+                <button class="btn-circle" onclick="window.adjStock(${i.id}, 1)">+</button>
+            </div>
           </div>
-        </div>`).join('') || '<p>Geen artikelen.</p>';
+        </div>`}).join('') || '<p style="text-align:center; opacity:0.5;">Voeg artikelen toe.</p>';
     }
 
     window.adjStock = async (id, delta) => {
       const item = state.items.find(i => i.id === id);
-      if(item) { item.voorraad = Math.max(0, item.voorraad + delta); renderStock(); await sync(); }
+      if(item) { item.voorraad = Math.max(0, item.voorraad + delta); renderDashboard(); await sync(); }
     };
-
-    function renderDashboard() {
-      document.getElementById('dashboard-list').innerHTML = state.items.map(i => `
-        <div class="glass-card">
-          <div style="font-size:0.8em; color:var(--accent); font-weight:bold;">${i.type}</div>
-          <div style="font-size:1.1em; font-weight:800;">${i.naam}</div>
-          <div style="margin-top:8px; opacity:0.7;">Voorraad: <b>${i.voorraad}</b> verpakkingen</div>
-        </div>`).join('') || '<p style="text-align:center; opacity:0.5;">Voeg artikelen toe.</p>';
-    }
 
     function renderFullList() {
       document.getElementById('full-list').innerHTML = state.items.map(i => `
@@ -423,7 +466,7 @@
     function renderVendors() {
       document.getElementById('vendor-list').innerHTML = state.vendors.map(v => `
         <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center;">
-          <div><div style="font-weight:800;">${v.naam}</div><div style="opacity:0.6;">${v.email || ''}</div></div>
+          <div><div style="font-weight:800;">${v.naam}</div><div style="opacity:0.6; font-size:0.85em;">${v.email || ''}</div></div>
           <button class="btn-circle" onclick="window.deleteVendor('${v.naam}')">🗑️</button>
         </div>`).join('') || '<p>Geen leveranciers.</p>';
     }
@@ -446,7 +489,7 @@
       let html = "";
       for (const [v, list] of Object.entries(perVendor)) {
         const ven = state.vendors.find(l => l.naam === v);
-        html += `<div class="glass-card"><h3>${v}</h3><ul>${list.map(it => `<li>${it.aantal}x ${it.naam}</li>`).join('')}</ul>
+        html += `<div class="glass-card"><h3>${v}</h3><ul>${list.map(it => `<li>${it.aantal}x verpakking ${it.naam}</li>`).join('')}</ul>
         ${ven && ven.email ? `<button class="btn-primary" onclick="window.mailOrder('${ven.email}', '${v}')">MAIL BESTELLING</button>` : ''}</div>`;
       }
       document.getElementById('order-list').innerHTML = html || '<div class="glass-card">Alles op voorraad.</div>';
@@ -516,7 +559,7 @@
 
     window.toggleFields = () => { document.getElementById('med-fields').style.display = document.getElementById('f-type').value === 'Medicatie' ? 'block' : 'none'; };
     window.logout = () => signOut(auth).then(() => location.reload());
-    window.deleteAccount = async () => { if(confirm("Data wissen?")) { await deleteDoc(doc(db, "users", auth.currentUser.uid)); await deleteUser(auth.currentUser); location.reload(); } };
+    window.deleteAccount = async () => { if(confirm("WEET U HET ZEKER? Al uw gegevens worden DEFINITIEF gewist.")) { await deleteDoc(doc(db, "users", auth.currentUser.uid)); await deleteUser(auth.currentUser); location.reload(); } };
     document.getElementById('btn-login-google').onclick = () => signInWithPopup(auth, provider);
   </script>
 </body>
